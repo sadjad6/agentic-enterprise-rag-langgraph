@@ -1,0 +1,12 @@
+[project]
+name = "enterprise-rag-workspace"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["backend"]
+
+[tool.pyre]
+source-directories = ["backend"]
+search-path = ["backend"]

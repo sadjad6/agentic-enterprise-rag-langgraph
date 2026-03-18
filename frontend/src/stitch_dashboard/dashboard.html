@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aether AI | Enterprise Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1132d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101322",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Left Sidebar -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-base font-bold leading-none">Aether AI</h1>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider mt-1">Enterprise v2.4</p>
+</div>
+</div>
+<div class="px-4 mb-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors shadow-sm shadow-primary/20">
+<span class="material-symbols-outlined text-lg">add</span>
+                    New Chat
+                </button>
+</div>
+<nav class="flex-1 overflow-y-auto px-2 custom-scrollbar space-y-6">
+<!-- Recent Chats -->
+<div>
+<p class="px-4 text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Recent</p>
+<div class="space-y-0.5">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/5 text-primary text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+<span class="truncate">Q3 Financial Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 text-sm" href="#">
+<span class="material-symbols-outlined text-lg text-slate-400">chat_bubble</span>
+<span class="truncate">Cloud Infrastructure...</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 text-sm" href="#">
+<span class="material-symbols-outlined text-lg text-slate-400">chat_bubble</span>
+<span class="truncate">Compliance Audit v1</span>
+</a>
+</div>
+</div>
+<!-- Document Collections -->
+<div>
+<div class="flex items-center justify-between px-4 mb-2">
+<p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Collections</p>
+<span class="material-symbols-outlined text-sm text-slate-400 cursor-pointer hover:text-primary">add_circle</span>
+</div>
+<div class="space-y-0.5">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 text-sm" href="#">
+<span class="material-symbols-outlined text-lg text-slate-400">folder</span>
+<span class="truncate">Legal Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 text-sm" href="#">
+<span class="material-symbols-outlined text-lg text-slate-400">folder</span>
+<span class="truncate">Technical Wiki</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- User Profile Card -->
+<div class="p-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+<div class="size-9 rounded-full bg-slate-200 overflow-hidden" data-alt="User profile avatar of Alex Mitchell">
+<img alt="Alex" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEnMrIpH1FINTKPMy33ZKixPPnszqY2DHZA79J_3giOOoMczxuFjw6KHTt1UHPkkVAh_31Wp8R4hPdHwQTOVgb1Gg7AEyUv9P8d8jo3JFIGuWQ0ieP4DWSJjfc0mtLjufikX24NZFNuhFw1ZmtxK9FixfPB9emSUvBWTbiXJq1pt8Rj9T2OEPuNdkicwTbHe834lQKckguH8Z3Rw4y97MCvzxN8Bw2nzsbyBthEXlCJYq3XWFvsAKYHxpZ7ofVP3dXixntzSE3o2vL"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-semibold truncate">Alex Mitchell</p>
+<p class="text-xs text-slate-500 truncate">Enterprise Admin</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg">settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col bg-white dark:bg-slate-950 relative min-w-0">
+<!-- Header -->
+<header class="h-16 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-sm font-semibold text-slate-900">Q3 Financial Analysis</h2>
+<div class="h-4 w-[1px] bg-slate-200"></div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-100">
+<span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        LOCAL MODE
+                    </div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Chat Content -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+<!-- User Message -->
+<div class="flex justify-end gap-3 max-w-4xl ml-auto">
+<div class="flex flex-col items-end gap-2">
+<div class="bg-primary text-white px-5 py-3 rounded-2xl rounded-tr-none shadow-sm text-sm leading-relaxed max-w-lg">
+                            Can you summarize the performance of our cloud division in Q3? Please highlight any revenue growth and key drivers.
+                        </div>
+<span class="text-[10px] text-slate-400 font-medium">10:42 AM</span>
+</div>
+<div class="size-8 rounded-full bg-slate-100 shrink-0" data-alt="Profile icon for user message sender">
+<img alt="User" class="w-full h-full rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATqnnDHOavf9fAzJu1ulDUqUh-CcA5U9RwiG3N3i_ObaUpEXXFd-cFyoj2EjdWkLUnn_7yQChOS5NbNln4550L8UQ08TYjykmRQSXlFFSf_q_AtoUyKkKInjzdaQ0-PJYry9SA5m0axvn4Hfsgj7LzAQdHmpMTQxKPUx-FxTIyF66eVRe0m4Wi3rjUuVfMDG3J1u-jI1jRHnvGS33LaholBpV6TCwdXOaqYSQwCBRRuPTZSx7_0jJaSzrFRgliqzQPdfitiZFwZijt"/>
+</div>
+</div>
+<!-- Assistant Message -->
+<div class="flex gap-4 max-w-4xl">
+<div class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
+</div>
+<div class="flex flex-col gap-3 flex-1 overflow-hidden">
+<div class="text-sm text-slate-700 dark:text-slate-300 space-y-4 leading-relaxed">
+<p>Based on the analyzed reports, the cloud division showed significant growth in Q3 2023. Here are the key highlights:</p>
+<ul class="list-disc pl-5 space-y-2 font-medium">
+<li><strong>Revenue:</strong> Grew by <span class="text-emerald-600">18.5% YoY</span>, reaching $4.2B.</li>
+<li><strong>Operating Margin:</strong> Improved to 24% from 21% in the previous quarter.</li>
+</ul>
+<div class="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl p-4 font-mono text-xs overflow-x-auto">
+<span class="text-slate-400"># Quarterly Revenue Metrics</span><br/>
+                                cloud_rev = 4200000000<br/>
+                                growth_yoy = 0.185<br/>
+                                print(f"Net Growth: {cloud_rev * (growth_yoy / (1 + growth_yoy)):.2f}")
+                            </div>
+<p>Primary growth drivers included the expansion of AI integration services and a surge in enterprise migrations to our hybrid cloud platform.</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                                [1] Q3_Financial_Summary.pdf
+                            </div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-sm">public</span>
+                                [2] Internal_Wiki_Cloud
+                            </div>
+</div>
+</div>
+</div>
+<!-- Thinking State -->
+<div class="flex gap-4 max-w-4xl">
+<div class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl animate-pulse">generating_tokens</span>
+</div>
+<div class="flex items-center gap-2 italic text-slate-400 text-sm">
+                        Thinking...
+                        <div class="flex gap-1">
+<span class="size-1 bg-slate-300 rounded-full animate-bounce"></span>
+<span class="size-1 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+<span class="size-1 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Input Area -->
+<div class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
+<div class="max-w-4xl mx-auto space-y-4">
+<div class="relative">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary rounded-lg hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-lg">attach_file</span>
+</button>
+</div>
+<input class="w-full pl-14 pr-16 py-4 bg-slate-50 dark:bg-slate-900 border-0 focus:ring-2 focus:ring-primary/20 rounded-2xl text-sm placeholder:text-slate-400" placeholder="Ask follow-up questions or request analysis..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2">
+<button class="size-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-md shadow-primary/20 hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+<!-- Mode Toggles -->
+<div class="flex items-center justify-between px-2">
+<div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+<button class="px-4 py-1.5 text-[11px] font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm text-primary">LOCAL (GDPR SAFE)</button>
+<button class="px-4 py-1.5 text-[11px] font-bold rounded-lg text-slate-500 hover:text-slate-700">CLOUD (GPT-4o)</button>
+</div>
+<div class="text-[11px] text-slate-400 font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">security</span>
+                            End-to-end encrypted session
+                        </div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Insights Panel -->
+<aside class="w-80 border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col">
+<div class="p-6 space-y-8 overflow-y-auto custom-scrollbar">
+<!-- Retrieved Documents -->
+<section>
+<h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-4">Retrieved Documents</h3>
+<div class="space-y-3">
+<div class="group p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors cursor-pointer">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">Q3_Financial_Summary.pdf</p>
+<p class="text-[10px] text-slate-500 mt-0.5">Updated 2 days ago • 4.2MB</p>
+</div>
+</div>
+</div>
+<div class="group p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors cursor-pointer">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-500">public</span>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">Internal_Wiki_Cloud</p>
+<p class="text-[10px] text-slate-500 mt-0.5">Real-time sync active</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Cost Tracking -->
+<section>
+<h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-4">Cost Tracking</h3>
+<div class="grid grid-cols-1 gap-3">
+<div class="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Tokens Usage</p>
+<p class="text-xl font-bold text-slate-900">2.4k</p>
+<div class="w-full bg-slate-100 h-1 rounded-full mt-3">
+<div class="bg-primary h-1 rounded-full" style="width: 45%"></div>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="flex-1 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Session</p>
+<p class="text-sm font-bold text-slate-900">$0.002</p>
+</div>
+<div class="flex-1 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Total</p>
+<p class="text-sm font-bold text-slate-900">$4.12</p>
+</div>
+</div>
+</div>
+</section>
+<!-- System Info -->
+<section>
+<h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-4">System Info</h3>
+<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
+<div class="px-4 py-3 flex justify-between items-center">
+<span class="text-xs text-slate-500">Mode</span>
+<span class="text-xs font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-md">Local</span>
+</div>
+<div class="px-4 py-3 flex justify-between items-center">
+<span class="text-xs text-slate-500">Model</span>
+<span class="text-xs font-bold">Ollama (Llama 3)</span>
+</div>
+<div class="px-4 py-3 flex justify-between items-center">
+<span class="text-xs text-slate-500">Language</span>
+<span class="text-xs font-bold">English (US)</span>
+</div>
+<div class="px-4 py-3 flex justify-between items-center">
+<span class="text-xs text-slate-500">Latency</span>
+<span class="text-xs font-bold text-emerald-600">42ms</span>
+</div>
+</div>
+</section>
+<!-- Analytics CTA -->
+<div class="p-5 bg-primary rounded-2xl relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 size-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+<p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">Analytics</p>
+<p class="text-white text-sm font-medium mb-4 relative z-10">Detailed usage insights available in Dashboard</p>
+<button class="w-full py-2 bg-white text-primary rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors relative z-10">
+                        View Analytics
+                    </button>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

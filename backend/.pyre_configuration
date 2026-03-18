@@ -1,0 +1,15 @@
+{
+  "source_directories": [
+    "."
+  ],
+  "search_path": [
+    "D:/Github/agentic-enterprise-rag-langgraph/backend"
+  ],
+  "search_roots": [
+    "D:/Github/agentic-enterprise-rag-langgraph/backend"
+  ],
+  "site_package_search_paths": [
+    "D:/Github/agentic-enterprise-rag-langgraph/.venv/Lib/site-packages"
+  ],
+  "site_package_path": "D:/Github/agentic-enterprise-rag-langgraph/.venv/Lib/site-packages"
+}

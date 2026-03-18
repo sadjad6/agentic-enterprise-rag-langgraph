@@ -1,0 +1,59 @@
+[
+    {
+        "id": "eval-001",
+        "query": "What is the company's data retention policy?",
+        "language": "en",
+        "expected_topics": ["data retention", "policy", "GDPR"],
+        "expected_source": "data_policy.pdf"
+    },
+    {
+        "id": "eval-002",
+        "query": "Wie lautet die Datenschutzrichtlinie des Unternehmens?",
+        "language": "de",
+        "expected_topics": ["Datenschutz", "Richtlinie", "DSGVO"],
+        "expected_source": "data_policy.pdf"
+    },
+    {
+        "id": "eval-003",
+        "query": "What are the onboarding steps for new employees?",
+        "language": "en",
+        "expected_topics": ["onboarding", "employees", "steps"],
+        "expected_source": "hr_onboarding.pdf"
+    },
+    {
+        "id": "eval-004",
+        "query": "Calculate the total budget if Q1 is 50000 and Q2 is 75000",
+        "language": "en",
+        "expected_topics": ["budget", "calculation"],
+        "requires_tool": "calculator"
+    },
+    {
+        "id": "eval-005",
+        "query": "What is the current weather in Berlin?",
+        "language": "en",
+        "expected_topics": ["weather", "Berlin"],
+        "requires_tool": "external_api"
+    },
+    {
+        "id": "eval-006",
+        "query": "Welche Sicherheitsrichtlinien gelten für Remote-Arbeit?",
+        "language": "de",
+        "expected_topics": ["Sicherheit", "Remote", "Richtlinien"],
+        "expected_source": "security_policy.pdf"
+    },
+    {
+        "id": "eval-007",
+        "query": "Summarize the key points from the Q4 financial report",
+        "language": "en",
+        "expected_topics": ["financial", "Q4", "report"],
+        "expected_source": "q4_report.pdf"
+    },
+    {
+        "id": "eval-008",
+        "query": "What is sqrt(144) + 15 * 3?",
+        "language": "en",
+        "expected_topics": ["calculation"],
+        "requires_tool": "calculator",
+        "expected_answer_contains": "57"
+    }
+]
