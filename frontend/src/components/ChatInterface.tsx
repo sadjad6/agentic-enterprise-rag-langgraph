@@ -1,64 +1,71 @@
-/** ChatInterface — matches the Stitch dashboard main chat area exactly.
- *  Composes Header, ChatMessage, and ChatInput sub-components.
- */
+/** ChatInterface — composition root matching the Stitch layout. */
 
-import { useState, useRef, useEffect } from 'react';
-import type { ChatMessage } from '../hooks/useApp';
-import type { ModeInfo } from '../lib/api';
 import { Header } from './Header';
-import { MessageBubble, EmptyState, LoadingIndicator } from './ChatMessage';
+import { ChatMessage as ChatMessageBubble, LoadingIndicator, EmptyState } from './ChatMessage';
 import { ChatInput } from './ChatInput';
+import type { ModeInfo } from '../lib/api';
+import type { ChatMessage } from '../hooks/useApp';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
   isLoading: boolean;
-  onSend: (query: string, mode: 'rag' | 'agent') => void;
-  mode?: ModeInfo | null;
+  onSend: (content: string) => void;
+  mode: ModeInfo | null;
   onToggleMode: () => void;
   isToggling: boolean;
 }
 
-export function ChatInterface({ messages, isLoading, onSend, mode, onToggleMode, isToggling }: ChatInterfaceProps) {
-  const [input, setInput] = useState('');
-  const bottomRef = useRef<HTMLDivElement>(null);
+export function ChatInterface({
+  messages,
+  isLoading,
+  onSend,
+  mode,
+  onToggleMode,
+  isToggling,
+}: ChatInterfaceProps) {
   const isLocal = mode?.mode === 'local';
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    onSend(input.trim(), 'agent');
-    setInput('');
-  };
-
   return (
-    <>
-      {/* Header — exact Stitch match */}
-      <Header isLocal={isLocal} />
+    <div className="flex flex-col w-full relative" style={{ height: '100%' }}>
+      <Header isLocal={isLocal} title="Current Session" />
 
-      {/* Chat Content */}
-      <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-        {messages.length === 0 && <EmptyState />}
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
-        {isLoading && <LoadingIndicator />}
-        <div ref={bottomRef} />
+      {/* Main chat area */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ padding: '2rem' }}>
+        <div className="mx-auto flex flex-col" style={{ maxWidth: '56rem', gap: '2rem' }}>
+          {messages.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              {messages.map((msg, i) => (
+                <ChatMessageBubble key={i} message={msg} />
+              ))}
+            </>
+          )}
+
+          {isLoading && <LoadingIndicator />}
+        </div>
       </div>
 
-      {/* Sticky Input Area — exact Stitch match */}
-      <ChatInput
-        input={input}
-        isLoading={isLoading}
-        isLocal={isLocal}
-        isToggling={isToggling}
-        onInputChange={setInput}
-        onSubmit={handleSubmit}
-        onToggleMode={onToggleMode}
-      />
-    </>
+      {/* Sticky Input Area */}
+      <div className="shrink-0 w-full">
+        <ChatInput
+          input=""
+          isLoading={isLoading}
+          isLocal={isLocal}
+          isToggling={isToggling}
+          onInputChange={() => {}}
+          onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.target as HTMLFormElement;
+            const input = form.querySelector('input') as HTMLInputElement;
+            if (input.value.trim()) {
+              onSend(input.value);
+              input.value = '';
+            }
+          }}
+          onToggleMode={onToggleMode}
+        />
+      </div>
+    </div>
   );
 }
