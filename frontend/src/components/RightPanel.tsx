@@ -1,7 +1,6 @@
-/** RightPanel — matches the Stitch dashboard right insights panel exactly. */
+/** RightPanel — matches the Stitch dashboard right insights panel layout. Dynamic data from props. */
 
-import type { CostMetrics } from '../lib/api';
-import type { ModeInfo } from '../lib/api';
+import type { CostMetrics, ModeInfo } from '../lib/api';
 
 interface RightPanelProps {
   documents: string[];
@@ -15,119 +14,163 @@ export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
     : 0;
 
   return (
-    <aside className="w-80 border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col">
-      <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar">
+    <aside className="border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col" style={{ width: '20rem' }}>
+      <div className="overflow-y-auto custom-scrollbar flex flex-col gap-8" style={{ padding: '1.5rem' }}>
 
         {/* Retrieved Documents */}
         <section>
-          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-4">
+          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest" style={{ marginBottom: '1rem' }}>
             Retrieved Documents
           </h3>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {documents.length === 0 ? (
-              <div className="group p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
-                <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-slate-400">description</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold truncate text-slate-400">No documents indexed</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Upload files to get started</p>
-                  </div>
-                </div>
-              </div>
+              <EmptyDocumentCard />
             ) : (
               documents.map((doc, i) => (
-                <div key={i} className="group p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors cursor-pointer">
-                  <div className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-red-500">picture_as_pdf</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate">{doc}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Available for search</p>
-                    </div>
-                  </div>
-                </div>
+                <DocumentCard key={i} name={doc} />
               ))
             )}
           </div>
         </section>
 
         {/* Cost Tracking */}
-        <section>
-          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-4">
-            Cost Tracking
-          </h3>
-          <div className="grid grid-cols-1 gap-3">
-            {/* Tokens Usage Card */}
-            <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Tokens Usage</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{formatNumber(totalTokens)}</p>
-              <div className="w-full bg-slate-100 h-1 rounded-full mt-3">
-                <div className="bg-primary h-1 rounded-full transition-all" style={{ width: totalTokens > 0 ? '45%' : '0%' }} />
-              </div>
-            </div>
-
-            {/* Session / Total row */}
-            <div className="flex gap-3">
-              <div className="flex-1 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Session</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  ${metrics?.total_cost_usd ? metrics.total_cost_usd.toFixed(3) : '0.000'}
-                </p>
-              </div>
-              <div className="flex-1 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Total</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  ${metrics?.total_cost_usd ? metrics.total_cost_usd.toFixed(2) : '0.00'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <CostTrackingSection totalTokens={totalTokens} metrics={metrics} />
 
         {/* System Info */}
-        <section>
-          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-4">
-            System Info
-          </h3>
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
-            <div className="px-4 py-3 flex justify-between items-center">
-              <span className="text-xs text-slate-500">Mode</span>
-              <span className="text-xs font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-md">
-                {mode?.mode === 'local' ? 'Local' : 'Cloud'}
-              </span>
-            </div>
-            <div className="px-4 py-3 flex justify-between items-center">
-              <span className="text-xs text-slate-500">Model</span>
-              <span className="text-xs font-bold">
-                {mode?.mode === 'local' ? 'Ollama (Llama 3)' : 'GPT-4o'}
-              </span>
-            </div>
-            <div className="px-4 py-3 flex justify-between items-center">
-              <span className="text-xs text-slate-500">Language</span>
-              <span className="text-xs font-bold">Auto-detect</span>
-            </div>
-            <div className="px-4 py-3 flex justify-between items-center">
-              <span className="text-xs text-slate-500">Requests</span>
-              <span className="text-xs font-bold text-emerald-600">{metrics?.total_requests || 0}</span>
-            </div>
-          </div>
-        </section>
+        <SystemInfoSection mode={mode} metrics={metrics} />
 
         {/* Analytics CTA */}
-        <div className="p-5 bg-primary rounded-2xl relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 size-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
-          <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">Analytics</p>
-          <p className="text-white text-sm font-medium mb-4 relative z-10">
-            Detailed usage insights available in Dashboard
-          </p>
-          <button className="w-full py-2 bg-white text-primary rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors relative z-10">
-            View Analytics
-          </button>
-        </div>
+        <AnalyticsCTA />
 
       </div>
     </aside>
   );
 }
+
+/* ── Document Cards ───────────────────────────────────────── */
+
+function EmptyDocumentCard() {
+  return (
+    <div className="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors" style={{ padding: '0.75rem' }}>
+      <div className="flex items-start gap-3">
+        <span className="material-symbols-outlined text-slate-400">description</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold truncate text-slate-400">No documents indexed</p>
+          <p className="text-[10px] text-slate-400" style={{ marginTop: '0.125rem' }}>Upload files to get started</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DocumentCard({ name }: { name: string }) {
+  const isPdf = name.toLowerCase().endsWith('.pdf');
+  return (
+    <div className="group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors cursor-pointer" style={{ padding: '0.75rem' }}>
+      <div className="flex items-start gap-3">
+        <span className={`material-symbols-outlined ${isPdf ? 'text-red-500' : 'text-blue-500'}`}>
+          {isPdf ? 'picture_as_pdf' : 'description'}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold truncate">{name}</p>
+          <p className="text-[10px] text-slate-500" style={{ marginTop: '0.125rem' }}>Available for search</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Cost Tracking ────────────────────────────────────────── */
+
+function CostTrackingSection({ totalTokens, metrics }: { totalTokens: number; metrics: CostMetrics | null }) {
+  return (
+    <section>
+      <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest" style={{ marginBottom: '1rem' }}>
+        Cost Tracking
+      </h3>
+      <div className="flex flex-col gap-3">
+        {/* Tokens Usage Card */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" style={{ padding: '1rem' }}>
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" style={{ marginBottom: '0.25rem' }}>Tokens Usage</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{formatNumber(totalTokens)}</p>
+          <div className="w-full bg-slate-100 h-1 rounded-full" style={{ marginTop: '0.75rem' }}>
+            <div className="bg-primary h-1 rounded-full transition-all" style={{ width: totalTokens > 0 ? '45%' : '0%' }} />
+          </div>
+        </div>
+
+        {/* Session / Total row */}
+        <div className="flex gap-3">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" style={{ padding: '1rem', flex: 1 }}>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" style={{ marginBottom: '0.25rem' }}>Session</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              ${metrics?.total_cost_usd ? metrics.total_cost_usd.toFixed(3) : '0.000'}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" style={{ padding: '1rem', flex: 1 }}>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider" style={{ marginBottom: '0.25rem' }}>Total</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              ${metrics?.total_cost_usd ? metrics.total_cost_usd.toFixed(2) : '0.00'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── System Info ──────────────────────────────────────────── */
+
+function SystemInfoSection({ mode, metrics }: { mode: ModeInfo | null; metrics: CostMetrics | null }) {
+  const isLocal = mode?.mode === 'local';
+  return (
+    <section>
+      <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest" style={{ marginBottom: '1rem' }}>
+        System Info
+      </h3>
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
+        <div className="flex justify-between items-center" style={{ padding: '0.75rem 1rem' }}>
+          <span className="text-xs text-slate-500 w-1/3">Mode</span>
+          <span className="text-xs font-bold text-primary bg-primary/10 rounded-md text-right whitespace-nowrap" style={{ padding: '0.125rem 0.5rem' }}>
+            {isLocal ? 'Local' : 'Cloud'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center gap-4" style={{ padding: '0.75rem 1rem' }}>
+          <span className="text-xs text-slate-500 shrink-0">Model</span>
+          <span className="text-xs font-bold text-right truncate">
+            {isLocal ? 'Ollama (Llama 3)' : 'GPT-4o'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center gap-4" style={{ padding: '0.75rem 1rem' }}>
+          <span className="text-xs text-slate-500 shrink-0">Language</span>
+          <span className="text-xs font-bold text-right truncate">Auto-detect</span>
+        </div>
+        <div className="flex justify-between items-center gap-4" style={{ padding: '0.75rem 1rem' }}>
+          <span className="text-xs text-slate-500 shrink-0">Requests</span>
+          <span className="text-xs font-bold text-emerald-600 text-right">{metrics?.total_requests ?? 0}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Analytics CTA ────────────────────────────────────────── */
+
+function AnalyticsCTA() {
+  return (
+    <div className="bg-primary rounded-2xl relative overflow-hidden group flex flex-col" style={{ padding: '1.25rem' }}>
+      <div className="absolute -right-4 -bottom-4 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform pointer-events-none" style={{ width: '6rem', height: '6rem' }} />
+      <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest" style={{ marginBottom: '0.25rem' }}>Analytics</p>
+      <p className="text-white text-sm font-medium relative z-10" style={{ marginBottom: '1rem' }}>
+        Detailed usage insights available in Dashboard
+      </p>
+      <button className="w-full bg-white text-primary rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors relative z-10 text-center" style={{ padding: '0.5rem 0' }}>
+        View Analytics
+      </button>
+    </div>
+  );
+}
+
+/* ── Helpers ──────────────────────────────────────────────── */
 
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;

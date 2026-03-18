@@ -1,8 +1,7 @@
-/** DocumentUpload — drag-and-drop file upload with progress. */
+/** DocumentUpload — drag-and-drop file upload with Stitch-matching Tailwind styling. */
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface DocumentUploadProps {
@@ -64,31 +63,30 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-lg font-bold gradient-text mb-4">Upload Documents</h2>
-      <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Upload Documents</h2>
+      <p className="text-sm text-slate-500 mb-6">
         Upload PDF, TXT, or Markdown files to index them for search.
       </p>
 
       {/* Dropzone */}
       <div
         {...getRootProps()}
-        className="glass-card p-10 text-center cursor-pointer transition-all"
-        style={{
-          border: isDragActive
-            ? '2px dashed var(--accent-primary)'
-            : '2px dashed var(--border)',
-        }}
+        className={`p-10 text-center cursor-pointer transition-all rounded-xl border-2 border-dashed bg-white dark:bg-slate-800 ${
+          isDragActive
+            ? 'border-primary bg-primary/5'
+            : 'border-slate-200 dark:border-slate-700'
+        }`}
       >
         <input {...getInputProps()} id="file-upload" />
-        <Upload
-          size={40}
-          className="mx-auto mb-4"
-          style={{ color: isDragActive ? 'var(--accent-primary)' : 'var(--text-muted)' }}
-        />
-        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <span className={`material-symbols-outlined text-4xl mx-auto mb-4 block ${
+          isDragActive ? 'text-primary' : 'text-slate-400'
+        }`}>
+          upload_file
+        </span>
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           {isDragActive ? 'Drop files here...' : 'Drag & drop files here'}
         </p>
-        <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs text-slate-400 mt-2">
           or click to browse • PDF, TXT, MD supported
         </p>
       </div>
@@ -99,25 +97,25 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
           {uploads.map((u, i) => (
             <div
               key={i}
-              className="glass-card flex items-center gap-3 px-4 py-3"
+              className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700"
             >
-              <FileText size={16} style={{ color: 'var(--accent-secondary)' }} />
-              <span className="flex-1 text-sm truncate" style={{ color: 'var(--text-primary)' }}>
+              <span className="material-symbols-outlined text-primary text-lg">description</span>
+              <span className="flex-1 text-sm truncate text-slate-700 dark:text-slate-300">
                 {u.file.name}
               </span>
 
               {u.status === 'uploading' && (
-                <Loader2 size={16} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />
+                <span className="material-symbols-outlined text-primary text-lg animate-spin">progress_activity</span>
               )}
               {u.status === 'success' && (
-                <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--success)' }}>
-                  <CheckCircle size={14} />
+                <span className="flex items-center gap-1 text-xs text-emerald-600">
+                  <span className="material-symbols-outlined text-sm">check_circle</span>
                   {u.result?.chunks_created} chunks • {u.result?.language_detected.toUpperCase()}
                 </span>
               )}
               {u.status === 'error' && (
-                <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--error)' }}>
-                  <AlertCircle size={14} />
+                <span className="flex items-center gap-1 text-xs text-red-500">
+                  <span className="material-symbols-outlined text-sm">error</span>
                   Failed
                 </span>
               )}
