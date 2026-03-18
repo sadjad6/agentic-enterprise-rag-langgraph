@@ -113,6 +113,7 @@ export function useMetrics(pollIntervalMs = 10000) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch; setState is in a callback, not synchronous
     fetchMetrics();
     const interval = setInterval(fetchMetrics, pollIntervalMs);
     return () => clearInterval(interval);
@@ -134,6 +135,7 @@ export function useDocuments() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch; setState is in a callback, not synchronous
   useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
 
   return { documents, refresh: fetchDocuments };
