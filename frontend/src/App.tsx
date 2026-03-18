@@ -34,13 +34,11 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         mode={mode}
-        onToggleMode={toggleMode}
-        isToggling={isToggling}
         documents={documents}
         onClearChat={clearChat}
       />

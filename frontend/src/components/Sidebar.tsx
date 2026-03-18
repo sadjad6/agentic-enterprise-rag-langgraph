@@ -1,5 +1,3 @@
-/** Sidebar — matches the Stitch dashboard left sidebar exactly. */
-
 import type { ModeInfo } from '../lib/api';
 
 type Tab = 'chat' | 'documents' | 'upload' | 'dashboard';
@@ -8,17 +6,14 @@ interface SidebarProps {
   activeTab: Tab;
   onTabChange: (tab: Tab) => void;
   mode: ModeInfo | null;
-  onToggleMode: () => void;
-  isToggling: boolean;
   documents: string[];
   onClearChat: () => void;
 }
 
 export function Sidebar({
-  activeTab, onTabChange, mode, onToggleMode, isToggling, documents, onClearChat,
+  activeTab, onTabChange, mode, documents, onClearChat,
 }: SidebarProps) {
   const isLocal = mode?.mode === 'local';
-
   return (
     <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0">
       {/* Logo / Brand */}
@@ -94,28 +89,22 @@ export function Sidebar({
 
       {/* User Profile Card — matches Stitch exactly */}
       <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-        <button
-          onClick={onToggleMode}
-          disabled={isToggling}
-          className="w-full flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl cursor-pointer"
-        >
-          <div className={`size-9 rounded-full overflow-hidden flex items-center justify-center ${
-            isLocal ? 'bg-emerald-100' : 'bg-purple-100'
+        <div className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+          <div className={`size-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm ${
+            isLocal ? 'bg-emerald-600' : 'bg-primary'
           }`}>
-            <span className={`material-symbols-outlined text-lg ${isLocal ? 'text-emerald-600' : 'text-purple-600'}`}>
-              {isLocal ? 'shield' : 'cloud'}
-            </span>
+            {isLocal ? 'LA' : 'EU'}
           </div>
-          <div className="flex-1 overflow-hidden text-left">
+          <div className="flex-1 overflow-hidden">
             <p className="text-sm font-semibold truncate">
-              {isLocal ? 'Local Mode' : 'Cloud Mode'}
+              {isLocal ? 'Local Analyst' : 'Enterprise User'}
             </p>
             <p className="text-xs text-slate-500 truncate">
-              {isToggling ? 'Switching...' : isLocal ? 'GDPR Safe' : 'Enterprise Admin'}
+              {isLocal ? 'GDPR Safe' : 'Admin Role'}
             </p>
           </div>
           <span className="material-symbols-outlined text-slate-400 text-lg">settings</span>
-        </button>
+        </div>
       </div>
     </aside>
   );

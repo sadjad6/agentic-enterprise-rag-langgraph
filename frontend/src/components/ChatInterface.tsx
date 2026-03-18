@@ -10,11 +10,12 @@ interface ChatInterfaceProps {
   isLoading: boolean;
   onSend: (query: string, mode: 'rag' | 'agent') => void;
   mode?: ModeInfo | null;
+  onToggleMode: () => void;
+  isToggling: boolean;
 }
 
-export function ChatInterface({ messages, isLoading, onSend, mode }: ChatInterfaceProps) {
+export function ChatInterface({ messages, isLoading, onSend, mode, onToggleMode, isToggling }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
-  const [queryMode, setQueryMode] = useState<'rag' | 'agent'>('agent');
   const bottomRef = useRef<HTMLDivElement>(null);
   const isLocal = mode?.mode === 'local';
 
@@ -25,7 +26,7 @@ export function ChatInterface({ messages, isLoading, onSend, mode }: ChatInterfa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    onSend(input.trim(), queryMode);
+    onSend(input.trim(), 'agent');
     setInput('');
   };
 
@@ -48,11 +49,11 @@ export function ChatInterface({ messages, isLoading, onSend, mode }: ChatInterfa
       <ChatInputArea
         input={input}
         isLoading={isLoading}
-        queryMode={queryMode}
         isLocal={isLocal}
+        isToggling={isToggling}
         onInputChange={setInput}
         onSubmit={handleSubmit}
-        onModeChange={setQueryMode}
+        onToggleMode={onToggleMode}
       />
     </>
   );
@@ -64,11 +65,11 @@ function ChatHeader({ isLocal }: { isLocal: boolean }) {
   return (
     <header className="h-16 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-10">
       <div className="flex items-center gap-4">
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Enterprise AI Chat</h2>
+        <h2 className="text-sm font-semibold text-slate-900">Enterprise AI Chat</h2>
         <div className="h-4 w-[1px] bg-slate-200" />
-        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold border border-emerald-100 ${
           isLocal
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+            ? 'bg-emerald-50 text-emerald-700'
             : 'bg-purple-50 text-purple-700 border-purple-100'
         }`}>
           <span className={`size-1.5 rounded-full animate-pulse ${isLocal ? 'bg-emerald-500' : 'bg-purple-500'}`} />
@@ -92,14 +93,14 @@ function ChatHeader({ isLocal }: { isLocal: boolean }) {
 interface ChatInputAreaProps {
   input: string;
   isLoading: boolean;
-  queryMode: 'rag' | 'agent';
   isLocal: boolean;
+  isToggling: boolean;
   onInputChange: (val: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-  onModeChange: (mode: 'rag' | 'agent') => void;
+  onToggleMode: () => void;
 }
 
-function ChatInputArea({ input, isLoading, queryMode, isLocal, onInputChange, onSubmit, onModeChange }: ChatInputAreaProps) {
+function ChatInputArea({ input, isLoading, isLocal, isToggling, onInputChange, onSubmit, onToggleMode }: ChatInputAreaProps) {
   return (
     <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
       <div className="max-w-4xl mx-auto space-y-4">
@@ -133,24 +134,26 @@ function ChatInputArea({ input, isLoading, queryMode, isLocal, onInputChange, on
         <div className="flex items-center justify-between px-2">
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             <button
-              onClick={() => onModeChange('agent')}
+              onClick={() => !isLocal && onToggleMode()}
+              disabled={isToggling}
               className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-                queryMode === 'agent'
+                isLocal
                   ? 'bg-white dark:bg-slate-700 shadow-sm text-primary'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              {isLocal ? 'LOCAL (GDPR SAFE)' : 'AGENT WORKFLOW'}
+              LOCAL (GDPR SAFE)
             </button>
             <button
-              onClick={() => onModeChange('rag')}
+              onClick={() => isLocal && onToggleMode()}
+              disabled={isToggling}
               className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-                queryMode === 'rag'
+                !isLocal
                   ? 'bg-white dark:bg-slate-700 shadow-sm text-primary'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              {isLocal ? 'STANDARD RAG' : 'CLOUD (GPT-4o)'}
+              CLOUD (GPT-4o)
             </button>
           </div>
           <div className="text-[11px] text-slate-400 font-medium flex items-center gap-2">
@@ -181,8 +184,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             </span>
           )}
         </div>
-        <div className="size-8 rounded-full bg-slate-100 shrink-0 flex items-center justify-center">
-          <span className="material-symbols-outlined text-slate-500 text-sm">person</span>
+        <div className="size-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs shrink-0 shadow-sm border border-slate-300">
+          U
         </div>
       </div>
     );
@@ -194,8 +197,33 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <span className="material-symbols-outlined text-xl">smart_toy</span>
       </div>
       <div className="flex flex-col gap-3 flex-1 overflow-hidden">
-        <div className="text-sm text-slate-700 dark:text-slate-300 space-y-4 leading-relaxed markdown-body">
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+        <div className="text-sm text-slate-700 dark:text-slate-300 space-y-4 leading-relaxed">
+          <ReactMarkdown
+            components={{
+              ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-2 font-medium" {...props} />,
+              ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-2 font-medium" {...props} />,
+              li: ({node, ...props}) => <li {...props} />,
+              p: ({node, ...props}) => <p {...props} />,
+              strong: ({node, ...props}) => <strong className="font-semibold text-slate-900 dark:text-slate-100" {...props} />,
+              pre: ({node, ...props}) => (
+                <pre className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl p-4 font-mono text-xs overflow-x-auto my-3" {...props} />
+              ),
+              code: ({node, className, children, ...props}: any) => {
+                const match = /language-(\w+)/.exec(className || '');
+                return match ? (
+                  <code className="text-slate-600 dark:text-slate-400 font-mono" {...props}>
+                    {children}
+                  </code>
+                ) : (
+                  <code className="text-emerald-600 font-medium bg-emerald-50 px-1 py-0.5 rounded" {...props}>
+                    {children}
+                  </code>
+                );
+              }
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
         </div>
 
         {/* Source chips — Stitch style */}

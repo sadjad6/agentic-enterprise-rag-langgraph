@@ -16,7 +16,7 @@ export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
 
   return (
     <aside className="w-80 border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col">
-      <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1">
+      <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar">
 
         {/* Retrieved Documents */}
         <section>
