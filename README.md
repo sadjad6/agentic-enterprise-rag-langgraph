@@ -1,5 +1,7 @@
 # 🧠 Enterprise RAG Assistant
 
+![Enterprise RAG Assistant](./assets/banner.png)
+
 A **GDPR-compliant Enterprise RAG (Retrieval-Augmented Generation) system** with agentic LangGraph workflows, multilingual support (DE/EN), cost tracking, and hybrid LLM infrastructure.
 
 ## Architecture
