@@ -12,14 +12,14 @@ type Tab = 'chat' | 'documents' | 'upload' | 'dashboard';
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
   const { messages, isLoading, sendMessage, clearChat } = useChat();
-  const { mode, toggleMode, isToggling } = useMode();
+  const { mode, setMode, isToggling } = useMode();
   const { metrics } = useMetrics();
   const { documents, refresh: refreshDocuments } = useDocuments();
 
   const renderContent = () => {
     switch (activeTab) {
       case 'chat':
-        return <ChatInterface messages={messages} isLoading={isLoading} onSend={sendMessage} mode={mode} onToggleMode={toggleMode} isToggling={isToggling} onUploadComplete={refreshDocuments} />;
+        return <ChatInterface messages={messages} isLoading={isLoading} onSend={sendMessage} mode={mode} onSetMode={setMode} isToggling={isToggling} onUploadComplete={refreshDocuments} />;
       case 'upload':
         return (
           <div className="flex-1 overflow-y-auto p-8">
@@ -29,7 +29,7 @@ export default function App() {
         );
       default:
         // documents and dashboard tabs are now integrated into RightPanel
-        return <ChatInterface messages={messages} isLoading={isLoading} onSend={sendMessage} mode={mode} onToggleMode={toggleMode} isToggling={isToggling} onUploadComplete={refreshDocuments} />;
+        return <ChatInterface messages={messages} isLoading={isLoading} onSend={sendMessage} mode={mode} onSetMode={setMode} isToggling={isToggling} onUploadComplete={refreshDocuments} />;
     }
   };
 

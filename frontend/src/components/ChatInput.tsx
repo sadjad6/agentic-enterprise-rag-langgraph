@@ -9,7 +9,7 @@ interface ChatInputProps {
   isToggling: boolean;
   onInputChange: (val: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-  onToggleMode: () => void;
+  onSetMode: (targetMode: 'local' | 'cloud') => void;
   onFileSelect?: (file: File) => void;
 }
 
@@ -20,7 +20,7 @@ export function ChatInput({
   isToggling,
   onInputChange,
   onSubmit,
-  onToggleMode,
+  onSetMode,
   onFileSelect,
 }: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,8 +95,8 @@ export function ChatInput({
         <div className="flex items-center justify-between" style={{ padding: '0 0.5rem', marginTop: '1rem' }}>
           <div className="flex bg-slate-100 dark:bg-slate-800" style={{ padding: '0.25rem', borderRadius: '0.75rem' }}>
             <button
-              onClick={() => !isLocal && onToggleMode()}
-              disabled={isToggling}
+              onClick={() => onSetMode('local')}
+              disabled={isLocal || isToggling}
               className={`text-[11px] font-bold transition-colors ${
                 isLocal
                   ? 'bg-white dark:bg-slate-700 shadow-sm text-primary'
@@ -107,8 +107,8 @@ export function ChatInput({
               LOCAL (GDPR SAFE)
             </button>
             <button
-              onClick={() => isLocal && onToggleMode()}
-              disabled={isToggling}
+              onClick={() => onSetMode('cloud')}
+              disabled={!isLocal || isToggling}
               className={`text-[11px] font-bold transition-colors ${
                 !isLocal
                   ? 'bg-white dark:bg-slate-700 shadow-sm text-primary'

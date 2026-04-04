@@ -12,7 +12,7 @@ interface ChatInterfaceProps {
   isLoading: boolean;
   onSend: (content: string) => void;
   mode: ModeInfo | null;
-  onToggleMode: () => void;
+  onSetMode: (targetMode: 'local' | 'cloud') => void;
   isToggling: boolean;
   onUploadComplete?: () => void;
 }
@@ -22,7 +22,7 @@ export function ChatInterface({
   isLoading,
   onSend,
   mode,
-  onToggleMode,
+  onSetMode,
   isToggling,
   onUploadComplete,
 }: ChatInterfaceProps) {
@@ -83,7 +83,7 @@ export function ChatInterface({
               setInputValue('');
             }
           }}
-          onToggleMode={onToggleMode}
+          onSetMode={onSetMode}
         />
       </div>
     </div>

@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     # ── Ollama (local) ───────────────────────────────────────
     ollama_base_url: str = "http://localhost:11600"
-    ollama_model: str = "mistral"
+    ollama_model: str = "llama3.2:1b"
     ollama_embed_model: str = "nomic-embed-text"
 
     # ── Weaviate ─────────────────────────────────────────────

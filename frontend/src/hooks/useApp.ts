@@ -23,7 +23,7 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const idCounter = useRef(0);
 
-  const sendMessage = useCallback(async (query: string, queryMode: 'rag' | 'agent' = 'agent') => {
+  const sendMessage = useCallback(async (query: string, queryMode: 'rag' | 'agent' = 'rag') => {
     const userMsg: ChatMessage = {
       id: `msg-${++idCounter.current}`,
       role: 'user',
@@ -80,23 +80,22 @@ export function useMode() {
     }
   }, []);
 
-  const toggleMode = useCallback(async () => {
-    if (!mode) return;
+  const setMode = useCallback(async (targetMode: 'local' | 'cloud') => {
+    // We don't need to check if mode is null, we can force a set if the user clicks.
     setIsToggling(true);
     try {
-      const newMode = mode.mode === 'local' ? 'cloud' : 'local';
-      const updated = await api.setMode(newMode);
+      const updated = await api.setMode(targetMode);
       setModeState(updated);
     } catch (err) {
       console.error('Mode toggle failed:', err);
     } finally {
       setIsToggling(false);
     }
-  }, [mode]);
+  }, []);
 
   useEffect(() => { fetchMode(); }, [fetchMode]);
 
-  return { mode, toggleMode, isToggling };
+  return { mode, setMode, isToggling };
 }
 
 /* ── useMetrics Hook ───────────────────────────────────────── */
