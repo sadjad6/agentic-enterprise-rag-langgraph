@@ -1,5 +1,6 @@
 /** ChatInterface — composition root matching the Stitch layout. */
 
+import { useState } from 'react';
 import { Header } from './Header';
 import { ChatMessage as ChatMessageBubble, LoadingIndicator, EmptyState } from './ChatMessage';
 import { ChatInput } from './ChatInput';
@@ -23,6 +24,7 @@ export function ChatInterface({
   onToggleMode,
   isToggling,
 }: ChatInterfaceProps) {
+  const [inputValue, setInputValue] = useState("");
   const isLocal = mode?.mode === 'local';
 
   return (
@@ -49,18 +51,16 @@ export function ChatInterface({
       {/* Sticky Input Area */}
       <div className="shrink-0 w-full">
         <ChatInput
-          input=""
+          input={inputValue}
           isLoading={isLoading}
           isLocal={isLocal}
           isToggling={isToggling}
-          onInputChange={() => {}}
+          onInputChange={setInputValue}
           onSubmit={(e) => {
             e.preventDefault();
-            const form = e.target as HTMLFormElement;
-            const input = form.querySelector('input') as HTMLInputElement;
-            if (input.value.trim()) {
-              onSend(input.value);
-              input.value = '';
+            if (inputValue.trim()) {
+              onSend(inputValue);
+              setInputValue('');
             }
           }}
           onToggleMode={onToggleMode}

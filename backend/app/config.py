@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     openai_embed_model: str = "text-embedding-3-small"
 
     # ── Ollama (local) ───────────────────────────────────────
-    ollama_base_url: str = "http://localhost:11434"
+    ollama_base_url: str = "http://localhost:11600"
     ollama_model: str = "mistral"
     ollama_embed_model: str = "nomic-embed-text"
 
