@@ -14,23 +14,93 @@ export interface ChatMessage {
   tokens?: { input: number; output: number };
   agent_steps?: number;
   tool_results?: QueryResponse['tool_results'];
-  timestamp: Date;
+  timestamp: Date | string;
 }
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  lastModified: number;
+}
+
+const STORAGE_KEY = 'aether_chat_sessions';
 
 /* ── useChat Hook ──────────────────────────────────────────── */
 export function useChat() {
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const idCounter = useRef(0);
 
+  // Sync to local storage whenever sessions change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  }, [sessions]);
+
+  // When activeSessionId changes, update the 'messages' view
+  useEffect(() => {
+    if (activeSessionId) {
+      const sess = sessions.find(s => s.id === activeSessionId);
+      if (sess) {
+        setMessages(sess.messages);
+      }
+    } else {
+      setMessages([]);
+    }
+  }, [activeSessionId, sessions]);
+
+  // Helper to persist current messages to the active session
+  const saveMessagesToSession = useCallback((newMessages: ChatMessage[], newSessionId?: string) => {
+    const sid = newSessionId || activeSessionId;
+    
+    // Auto-generate title from the first user message if available
+    const firstUserMsg = newMessages.find(m => m.role === 'user');
+    let title = 'New Chat';
+    if (firstUserMsg && typeof firstUserMsg.content === 'string') {
+        const text = firstUserMsg.content;
+        title = text.length > 30 ? text.substring(0, 30) + '...' : text;
+    }
+
+    setSessions(prev => {
+      const exists = prev.find(s => s.id === sid);
+      if (exists) {
+        return prev.map(s => s.id === sid ? { ...s, messages: newMessages, lastModified: Date.now(), title } : s);
+      } else {
+        return [{ id: sid!, title, messages: newMessages, lastModified: Date.now() }, ...prev];
+      }
+    });
+  }, [activeSessionId]);
+
   const sendMessage = useCallback(async (query: string, queryMode: 'rag' | 'agent' = 'rag') => {
+    let currentSessionId = activeSessionId;
+    if (!currentSessionId) {
+      currentSessionId = `session-${Date.now()}`;
+      setActiveSessionId(currentSessionId);
+    }
+
     const userMsg: ChatMessage = {
       id: `msg-${++idCounter.current}`,
       role: 'user',
       content: query,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
-    setMessages(prev => [...prev, userMsg]);
+    
+    // Optimistic update
+    setMessages(prev => {
+       const next = [...prev, userMsg];
+       saveMessagesToSession(next, currentSessionId!);
+       return next;
+    });
+    
     setIsLoading(true);
 
     try {
@@ -45,25 +115,57 @@ export function useChat() {
         tokens: response.tokens_used,
         agent_steps: response.agent_steps,
         tool_results: response.tool_results,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, assistantMsg]);
+      setMessages(prev => {
+          const next = [...prev, assistantMsg];
+          saveMessagesToSession(next, currentSessionId!);
+          return next;
+      });
     } catch (err) {
       const errorMsg: ChatMessage = {
         id: `msg-${++idCounter.current}`,
         role: 'assistant',
         content: `⚠️ Error: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => {
+          const next = [...prev, errorMsg];
+          saveMessagesToSession(next, currentSessionId!);
+          return next;
+      });
     } finally {
       setIsLoading(false);
     }
+  }, [activeSessionId, saveMessagesToSession]);
+
+  const selectSession = useCallback((id: string) => {
+    setActiveSessionId(id);
   }, []);
 
-  const clearChat = useCallback(() => setMessages([]), []);
+  const clearChat = useCallback(() => {
+     setActiveSessionId(null);
+     setMessages([]);
+  }, []);
 
-  return { messages, isLoading, sendMessage, clearChat };
+  const deleteSession = useCallback((id: string) => {
+    if (activeSessionId === id) {
+      setActiveSessionId(null);
+      setMessages([]);
+    }
+    setSessions(prev => prev.filter(s => s.id !== id));
+  }, [activeSessionId]);
+
+  return { 
+    messages, 
+    isLoading, 
+    sendMessage, 
+    clearChat, 
+    sessions, 
+    activeSessionId, 
+    selectSession, 
+    deleteSession 
+  };
 }
 
 /* ── useMode Hook ──────────────────────────────────────────── */

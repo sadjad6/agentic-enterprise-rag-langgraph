@@ -11,7 +11,7 @@ type Tab = 'chat' | 'documents' | 'upload' | 'dashboard';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
-  const { messages, isLoading, sendMessage, clearChat } = useChat();
+  const { messages, isLoading, sendMessage, clearChat, sessions, activeSessionId, selectSession, deleteSession } = useChat();
   const { mode, setMode, isToggling } = useMode();
   const { metrics } = useMetrics();
   const { documents, refresh: refreshDocuments } = useDocuments();
@@ -41,6 +41,10 @@ export default function App() {
         mode={mode}
         documents={documents}
         onClearChat={clearChat}
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onSelectSession={selectSession}
+        onDeleteSession={deleteSession}
       />
       
       <main className="flex-1 flex flex-col bg-white dark:bg-slate-950 relative min-w-0">

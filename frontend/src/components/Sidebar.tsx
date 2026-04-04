@@ -1,6 +1,7 @@
 /** Sidebar — matches the Stitch dashboard left sidebar layout. Dynamic data from props. */
 
 import type { ModeInfo } from '../lib/api';
+import type { ChatSession } from '../hooks/useApp';
 
 type Tab = 'chat' | 'documents' | 'upload' | 'dashboard';
 
@@ -10,6 +11,10 @@ interface SidebarProps {
   mode: ModeInfo | null;
   documents: string[];
   onClearChat: () => void;
+  sessions: ChatSession[];
+  activeSessionId: string | null;
+  onSelectSession: (id: string) => void;
+  onDeleteSession: (id: string) => void;
 }
 
 export function Sidebar({
@@ -18,6 +23,10 @@ export function Sidebar({
   mode,
   documents,
   onClearChat,
+  sessions,
+  activeSessionId,
+  onSelectSession,
+  onDeleteSession,
 }: SidebarProps) {
   const isLocal = mode?.mode === 'local';
   const modeName = isLocal ? 'Local Mode' : 'Cloud Mode';
@@ -59,20 +68,47 @@ export function Sidebar({
         <div>
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest" style={{ padding: '0 1rem', marginBottom: '0.5rem' }}>Recent</p>
           <div className="flex flex-col" style={{ gap: '0.125rem' }}>
-            <button
-              onClick={() => onTabChange('chat')}
-              className={`w-full flex items-center text-sm font-medium transition-colors ${
-                activeTab === 'chat'
-                  ? 'bg-primary/5 text-primary'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-              style={{ gap: '0.75rem', padding: '0.5rem 1rem', borderRadius: '0.5rem' }}
-            >
-              <span className={`material-symbols-outlined block ${activeTab === 'chat' ? '' : 'text-slate-400'}`} style={{ fontSize: '1.125rem' }}>
-                chat_bubble
-              </span>
-              <span className="truncate">Current Session</span>
-            </button>
+            {sessions.length === 0 ? (
+               <div className="text-[11px] text-slate-400 font-medium px-4 py-2 italic">
+                 No recent chats
+               </div>
+            ) : (
+               sessions.map((session) => {
+                 const isActive = activeSessionId === session.id && activeTab === 'chat';
+                 return (
+                   <div
+                     key={session.id}
+                     className={`w-full flex items-center justify-between text-sm font-medium transition-colors group cursor-pointer ${
+                       isActive
+                         ? 'bg-primary/5 text-primary'
+                         : 'text-slate-600 hover:bg-slate-50'
+                     }`}
+                     style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem' }}
+                     onClick={() => {
+                        onSelectSession(session.id);
+                        onTabChange('chat');
+                     }}
+                   >
+                     <div className="flex items-center truncate max-w-[80%]" style={{ gap: '0.75rem' }}>
+                       <span className={`material-symbols-outlined block shrink-0 ${isActive ? '' : 'text-slate-400'}`} style={{ fontSize: '1.125rem' }}>
+                         chat_bubble
+                       </span>
+                       <span className="truncate">{session.title}</span>
+                     </div>
+                     
+                     <button
+                        onClick={(e) => {
+                           e.stopPropagation();
+                           onDeleteSession(session.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 rounded p-1 hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0"
+                     >
+                        <span className="material-symbols-outlined block" style={{ fontSize: '1.125rem' }}>delete</span>
+                     </button>
+                   </div>
+                 );
+               })
+            )}
           </div>
         </div>
 
