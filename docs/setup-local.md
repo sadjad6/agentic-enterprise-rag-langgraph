@@ -40,7 +40,7 @@ Open `.env` and verify the following values are set for local mode:
 SYSTEM_MODE=local
 
 # Ollama (Local LLM)
-OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_BASE_URL=http://localhost:11600
 OLLAMA_MODEL=mistral
 OLLAMA_EMBED_MODEL=nomic-embed-text
 
@@ -74,7 +74,7 @@ docker ps
 
 You should see two containers:
 - `weaviate` listening on ports `8080` (REST) and `50051` (gRPC)
-- `ollama` listening on port `11434`
+- `ollama` listening on port `11600`
 
 ### Pull the Required Models
 
@@ -99,7 +99,7 @@ docker exec -it $(docker ps -qf "ancestor=ollama/ollama") ollama pull nomic-embe
 ### Verify Ollama is Ready
 
 ```bash
-curl http://localhost:11434/api/tags
+curl http://localhost:11600/api/tags
 ```
 
 You should see both `mistral` and `nomic-embed-text` listed.
@@ -183,7 +183,7 @@ curl -X POST http://localhost:8000/query \
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `Connection refused` on port 11434 | Ollama container not running | `docker-compose up -d ollama` |
+| `Connection refused` on port 11600 | Ollama container not running | `docker-compose up -d ollama` |
 | `Connection refused` on port 8080 | Weaviate container not running | `docker-compose up -d weaviate` |
 | `model not found` errors | Models not pulled yet | Run `ollama pull mistral` inside the container |
 | Slow first response (30s+) | Model loading into VRAM on first query | Wait for the first response; subsequent queries are faster |
