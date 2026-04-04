@@ -1,5 +1,7 @@
 /** ChatInput — sticky input area matching the Stitch design exactly. */
 
+import { useRef } from 'react';
+
 interface ChatInputProps {
   input: string;
   isLoading: boolean;
@@ -8,6 +10,7 @@ interface ChatInputProps {
   onInputChange: (val: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onToggleMode: () => void;
+  onFileSelect?: (file: File) => void;
 }
 
 export function ChatInput({
@@ -18,7 +21,25 @@ export function ChatInput({
   onInputChange,
   onSubmit,
   onToggleMode,
+  onFileSelect,
 }: ChatInputProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onFileSelect) {
+      onFileSelect(file);
+    }
+    // Reset so the same file can be selected again
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="border-t border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md" style={{ padding: '1.5rem' }}>
       <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
@@ -28,10 +49,20 @@ export function ChatInput({
             className="flex items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
             style={{ gap: '0.5rem', borderRadius: '1rem', padding: '0.5rem 0.75rem' }}
           >
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept=".pdf,.txt,.md"
+            />
             {/* Attach icon */}
             <button
               type="button"
-              className="shrink-0 text-slate-400 hover:text-primary hover:bg-slate-100 transition-colors"
+              onClick={handleAttachClick}
+              disabled={isLoading}
+              className="shrink-0 text-slate-400 hover:text-primary hover:bg-slate-100 transition-colors disabled:opacity-50"
               style={{ padding: '0.375rem', borderRadius: '0.5rem' }}
             >
               <span className="material-symbols-outlined block" style={{ fontSize: '1.125rem' }}>attach_file</span>

@@ -14,6 +14,7 @@ interface ChatInterfaceProps {
   mode: ModeInfo | null;
   onToggleMode: () => void;
   isToggling: boolean;
+  onUploadComplete?: () => void;
 }
 
 export function ChatInterface({
@@ -23,9 +24,27 @@ export function ChatInterface({
   mode,
   onToggleMode,
   isToggling,
+  onUploadComplete,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const isLocal = mode?.mode === 'local';
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      // You can add api to imports if missing, wait I'll add it in the next chunk if needed. Wait I forgot to import api!
+      // I'll import it in the next step. Let's assume it's imported for now or I will fix it.
+      const { api } = await import('../lib/api');
+      await api.upload(file);
+      onUploadComplete?.();
+      alert(`File ${file.name} uploaded successfully!`);
+    } catch (e) {
+      alert(`Upload failed: ${e instanceof Error ? e.message : e}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col w-full relative" style={{ height: '100%' }}>
@@ -52,10 +71,11 @@ export function ChatInterface({
       <div className="shrink-0 w-full">
         <ChatInput
           input={inputValue}
-          isLoading={isLoading}
+          isLoading={isLoading || isUploading}
           isLocal={isLocal}
           isToggling={isToggling}
           onInputChange={setInputValue}
+          onFileSelect={handleFileUpload}
           onSubmit={(e) => {
             e.preventDefault();
             if (inputValue.trim()) {
