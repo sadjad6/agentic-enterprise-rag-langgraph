@@ -63,7 +63,7 @@ export function Sidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto custom-scrollbar flex flex-col" style={{ padding: '0 0.5rem', gap: '1.5rem' }}>
+      <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col" style={{ padding: '0 0.5rem', gap: '1.5rem' }}>
         {/* Recent Chats */}
         <div>
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest" style={{ padding: '0 1rem', marginBottom: '0.5rem' }}>Recent</p>
