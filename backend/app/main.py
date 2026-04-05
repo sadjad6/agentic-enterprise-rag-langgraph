@@ -5,10 +5,12 @@ the application lifecycle (startup/shutdown).
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api import routes_health, routes_metrics, routes_mode, routes_query, routes_upload
 from app.config import get_settings
@@ -56,6 +58,15 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# ── Static Files (For Extracted PDF Images) ──────────────────
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static", "figures")
+os.makedirs(STATIC_DIR, exist_ok=True)
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "static")),
+    name="static",
 )
 
 # ── Register Routes ──────────────────────────────────────────

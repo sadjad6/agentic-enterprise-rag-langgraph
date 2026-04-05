@@ -238,9 +238,7 @@ export function useDocuments() {
   const fetchDocuments = useCallback(async () => {
     try {
       const data = await api.getDocuments();
-      if (data.documents && data.documents.length > 0) {
-         setDocuments(data.documents);
-      }
+      setDocuments(data.documents ?? []);
     } catch {
       /* backend not yet available */
     }

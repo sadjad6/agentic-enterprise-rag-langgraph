@@ -186,3 +186,23 @@ class VectorStore:
             sources_set.add(obj.properties.get("source", "unknown"))
 
         return sorted(sources_set)
+
+    def get_document_preview(self, source: str) -> str:
+        """Fetch all chunks for a specific source and reconstruct the document text."""
+        if not self._client:
+            self.connect()
+
+        collection = self._client.collections.get(COLLECTION_NAME)
+        response = collection.query.fetch_objects(
+            filters=weaviate.classes.query.Filter.by_property("source").equal(source),
+            limit=10000,
+        )
+        
+        # Sort chunks locally by their original index to reconstruct the document order
+        objects = sorted(
+            response.objects,
+            key=lambda x: x.properties.get("chunk_index", 0)
+        )
+        
+        text_parts = [str(obj.properties.get("content", "")) for obj in objects]
+        return "\n\n".join(text_parts)

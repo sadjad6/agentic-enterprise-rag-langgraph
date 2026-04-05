@@ -3,7 +3,7 @@
 import type { ModeInfo } from '../lib/api';
 import type { ChatSession } from '../hooks/useApp';
 
-type Tab = 'chat' | 'documents' | 'upload' | 'dashboard';
+type Tab = 'chat' | 'documents' | 'upload' | 'dashboard' | 'preview';
 
 interface SidebarProps {
   activeTab: Tab;
@@ -15,6 +15,8 @@ interface SidebarProps {
   activeSessionId: string | null;
   onSelectSession: (id: string) => void;
   onDeleteSession: (id: string) => void;
+  onDocumentClick?: (doc: string) => void;
+  onDeleteDocument?: (doc: string) => void;
 }
 
 export function Sidebar({
@@ -27,6 +29,8 @@ export function Sidebar({
   activeSessionId,
   onSelectSession,
   onDeleteSession,
+  onDocumentClick,
+  onDeleteDocument,
 }: SidebarProps) {
   const isLocal = mode?.mode === 'local';
   const modeName = isLocal ? 'Local Mode' : 'Cloud Mode';
@@ -133,11 +137,24 @@ export function Sidebar({
               documents.map((doc) => (
                 <div
                   key={doc}
-                  className="flex items-center text-slate-600 hover:bg-slate-50 text-sm cursor-pointer transition-colors"
+                  onClick={() => onDocumentClick?.(doc)}
+                  className="flex items-center justify-between text-slate-600 hover:bg-slate-50 text-sm cursor-pointer transition-colors group"
                   style={{ gap: '0.75rem', padding: '0.5rem 1rem', borderRadius: '0.5rem' }}
                 >
-                  <span className="material-symbols-outlined text-slate-400 block" style={{ fontSize: '1.125rem' }}>folder</span>
-                  <span className="truncate">{doc}</span>
+                  <div className="flex items-center min-w-0" style={{ gap: '0.75rem' }}>
+                    <span className="material-symbols-outlined text-slate-400 block shrink-0" style={{ fontSize: '1.125rem' }}>folder</span>
+                    <span className="truncate">{doc}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteDocument?.(doc);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 rounded p-1 hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0"
+                    title={`Delete ${doc}`}
+                  >
+                    <span className="material-symbols-outlined block" style={{ fontSize: '1.125rem' }}>delete</span>
+                  </button>
                 </div>
               ))
             )}

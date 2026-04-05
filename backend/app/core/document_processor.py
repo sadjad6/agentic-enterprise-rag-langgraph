@@ -5,15 +5,13 @@ RecursiveCharacterTextSplitter for intelligent chunking.
 """
 
 import logging
-from io import BytesIO
 from pathlib import Path
 
 import markdown
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.embeddings import Embeddings
-from pypdf import PdfReader
-from pdf2image import convert_from_bytes
-import pytesseract
+import tempfile
+import pymupdf4llm
 
 from app.config import get_settings
 
@@ -22,35 +20,44 @@ logger = logging.getLogger(__name__)
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 
-def _extract_text_pdf_ocr(content: bytes) -> str:
-    """Extract text from an image-based PDF using OCR."""
-    logger.info("Basic PDF extraction yielded insufficient text. Falling back to OCR (PyTesseract)...")
-    images = convert_from_bytes(content)
-    text_chunks = []
-    for i, img in enumerate(images):
-        page_text = pytesseract.image_to_string(img)
-        text_chunks.append(page_text)
-    return "\n\n".join(text_chunks)
+def _extract_text_pdf(content: bytes, filename: str) -> str:
+    """Extract text from a PDF file with inline markdown figures using PyMuPDF4LLM."""
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        # Create output directory for images if it doesn't exist
+        static_dir = Path(__file__).parent.parent.parent / "static" / "figures"
+        static_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Use PyMuPDF4LLM to convert to markdown, extracting images
+        md_text = pymupdf4llm.to_markdown(
+            tmp_path,
+            write_images=True,
+            image_path=str(static_dir),
+            image_format="png"
+        )
+        
+        # Fix the markdown image paths to route locally via FastAPI StaticFiles
+        import re
+        # Convert any absolute filepath references injected by pymupdf4llm into static links.
+        # usually they look like ![id](some/absolute/path/file.png)
+        # We just find anything ending in .png and replace the path, or replace the `static_dir` string directly.
+        
+        md_text = md_text.replace(str(static_dir) + "/", "/static/figures/")
+        md_text = md_text.replace(str(static_dir) + "\\", "/static/figures/")
+        # Sometimes it converts backslashes to forward slashes in python even on windows inside the string
+        forward_slash_dir = str(static_dir).replace("\\", "/")
+        md_text = md_text.replace(forward_slash_dir + "/", "/static/figures/")
+        
+        return md_text
+    finally:
+        import os
+        os.unlink(tmp_path)
 
 
-def _extract_text_pdf(content: bytes) -> str:
-    """Extract text from a PDF file with OCR fallback."""
-    reader = PdfReader(BytesIO(content))
-    pages = [page.extract_text() or "" for page in reader.pages]
-    extracted = "\n\n".join(pages)
-    
-    # If the text is very short (e.g. only whitespaces or metadata), assume it's image-based.
-    if len(extracted.strip()) < 50:
-        try:
-            return _extract_text_pdf_ocr(content)
-        except Exception as e:
-            logger.error("OCR fallback failed: %s. Please ensure Tesseract and poppler-utils are installed.", e)
-            return extracted
-            
-    return extracted
-
-
-def _extract_text_markdown(content: bytes) -> str:
+def _extract_text_markdown(content: bytes, filename: str) -> str:
     """Convert Markdown to plain text."""
     md_text = content.decode("utf-8", errors="replace")
     html = markdown.markdown(md_text)
@@ -60,7 +67,7 @@ def _extract_text_markdown(content: bytes) -> str:
     return re.sub(r"<[^>]+>", "", html)
 
 
-def _extract_text_plain(content: bytes) -> str:
+def _extract_text_plain(content: bytes, filename: str) -> str:
     """Decode plain text content."""
     return content.decode("utf-8", errors="replace")
 
@@ -85,7 +92,7 @@ def extract_text(filename: str, content: bytes) -> str:
         supported = ", ".join(SUPPORTED_EXTENSIONS)
         raise ValueError(f"Unsupported file type '{ext}'. Supported: {supported}")
 
-    text = extractor(content)
+    text = extractor(content, filename)
     logger.info("Extracted %d characters from '%s'", len(text), filename)
     return text
 

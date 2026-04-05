@@ -100,3 +100,36 @@ async def list_documents() -> dict:
     except Exception as e:
         logger.error("Failed to list documents: %s", e)
         return {"documents": [], "count": 0, "error": str(e)}
+
+
+@router.get("/documents/{filename}/preview")
+async def preview_document(filename: str) -> dict:
+    """Retrieve the stitched text for a specific document."""
+    try:
+        vector_store = get_vector_store()
+        text = vector_store.get_document_preview(filename)
+        if not text:
+            raise HTTPException(status_code=404, detail="Document not found or empty")
+        
+        return {
+            "filename": filename,
+            "preview_text": text
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to preview document %s: %s", filename, e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/documents/{filename}")
+async def delete_document(filename: str) -> dict:
+    """Delete all chunks for a specific document from the vector store."""
+    try:
+        vector_store = get_vector_store()
+        vector_store.delete_by_source(filename)
+        logger.info("Deleted document '%s'", filename)
+        return {"status": "success", "filename": filename}
+    except Exception as e:
+        logger.error("Failed to delete document %s: %s", filename, e)
+        raise HTTPException(status_code=500, detail=str(e))

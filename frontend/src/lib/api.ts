@@ -101,6 +101,14 @@ export const api = {
 
   getDocuments: () => request<DocumentList>('/documents'),
 
+  getDocumentPreview: (filename: string) => 
+    request<{ filename: string; preview_text: string }>(`/documents/${encodeURIComponent(filename)}/preview`),
+
+  deleteDocument: (filename: string) =>
+    request<{ status: string; filename: string }>(`/documents/${encodeURIComponent(filename)}`, {
+      method: 'DELETE',
+    }),
+
   getMetrics: () => request<CostMetrics>('/metrics'),
 
   getHealth: () => request<HealthStatus>('/health'),
