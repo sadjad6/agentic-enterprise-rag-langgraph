@@ -14,7 +14,7 @@ export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
     : 0;
 
   return (
-    <aside className="border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col" style={{ width: '20rem' }}>
+    <aside className="border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col h-screen overflow-hidden" style={{ width: '20rem' }}>
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-8" style={{ padding: '1.5rem' }}>
 
         {/* Retrieved Documents */}

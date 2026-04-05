@@ -37,7 +37,7 @@ export function Sidebar({
 
   return (
     <aside 
-      className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0"
+      className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 h-screen overflow-hidden"
       style={{ width: '16rem' }}
     >
       {/* Logo / Brand */}
