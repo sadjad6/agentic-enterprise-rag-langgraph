@@ -66,7 +66,7 @@ class VectorStore:
     def _ensure_schema(self) -> None:
         """Create the Document collection if it doesn't exist."""
         if not self._client:
-            raise ConnectionError("Weaviate client not connected")
+            self.connect()
 
         if self._client.collections.exists(COLLECTION_NAME):
             logger.info("Collection '%s' already exists", COLLECTION_NAME)
@@ -98,7 +98,7 @@ class VectorStore:
         Returns the number of inserted objects.
         """
         if not self._client:
-            raise ConnectionError("Weaviate client not connected")
+            self.connect()
 
         collection = self._client.collections.get(COLLECTION_NAME)
         inserted = 0
@@ -133,7 +133,7 @@ class VectorStore:
         higher retrieval quality.
         """
         if not self._client:
-            raise ConnectionError("Weaviate client not connected")
+            self.connect()
 
         collection = self._client.collections.get(COLLECTION_NAME)
 
@@ -165,7 +165,7 @@ class VectorStore:
     def delete_by_source(self, source: str) -> None:
         """Delete all chunks from a given source document."""
         if not self._client:
-            raise ConnectionError("Weaviate client not connected")
+            self.connect()
 
         collection = self._client.collections.get(COLLECTION_NAME)
         collection.data.delete_many(
@@ -176,7 +176,7 @@ class VectorStore:
     def get_document_sources(self) -> list[str]:
         """Return a list of unique document source names."""
         if not self._client:
-            raise ConnectionError("Weaviate client not connected")
+            self.connect()
 
         collection = self._client.collections.get(COLLECTION_NAME)
         result = collection.aggregate.over_all(total_count=True)
