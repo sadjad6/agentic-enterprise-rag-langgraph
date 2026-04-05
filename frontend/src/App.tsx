@@ -1,63 +1,41 @@
-/** App — root component assembling the sidebar and main content panels. */
+/** App — route-backed shell assembling the sidebar and main content panels. */
 
-import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { ChatInterface } from './components/ChatInterface';
+import { Dashboard } from './components/Dashboard';
+import { DocumentReader } from './components/DocumentReader';
 import { DocumentUpload } from './components/DocumentUpload';
+import { Header } from './components/Header';
 import { RightPanel } from './components/RightPanel';
-import { useChat, useMode, useMetrics, useDocuments } from './hooks/useApp';
+import { useChat, useDashboard, useDocuments, useMetrics, useMode } from './hooks/useApp';
 import { api } from './lib/api';
 
-import { DocumentReader } from './components/DocumentReader';
-
-type Tab = 'chat' | 'documents' | 'upload' | 'dashboard' | 'preview';
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('chat');
-  const [activePreviewDoc, setActivePreviewDoc] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   const { messages, isLoading, sendMessage, clearChat, sessions, activeSessionId, selectSession, deleteSession } = useChat();
   const { mode, setMode, isToggling } = useMode();
   const { metrics } = useMetrics();
+  const { analytics, isLoading: isDashboardLoading } = useDashboard();
   const { documents, refresh: refreshDocuments, addDocument } = useDocuments();
 
   const handleDeleteDocument = async (doc: string) => {
     try {
       await api.deleteDocument(doc);
       refreshDocuments();
-      // If we're previewing the deleted doc, go back to chat
-      if (activePreviewDoc === doc) {
-        setActivePreviewDoc(null);
-        setActiveTab('chat');
+      if (location.pathname === `/documents/${encodeURIComponent(doc)}`) {
+        navigate('/chat');
       }
     } catch (err) {
       console.error('Failed to delete document:', err);
     }
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'chat':
-        return <ChatInterface messages={messages} isLoading={isLoading} onSend={sendMessage} mode={mode} onSetMode={setMode} isToggling={isToggling} onUploadComplete={refreshDocuments} onAddDocument={addDocument} />;
-      case 'upload':
-        return (
-          <div className="flex-1 overflow-y-auto p-8">
-            <h2 className="text-xl font-bold mb-6">Upload Document</h2>
-            <DocumentUpload onUploadComplete={refreshDocuments} />
-          </div>
-        );
-      case 'preview':
-        return activePreviewDoc ? <DocumentReader filename={activePreviewDoc} onClose={() => setActiveTab('chat')} /> : <div className="p-8">No document selected.</div>;
-      default:
-        // documents and dashboard tabs are now integrated into RightPanel
-        return <ChatInterface messages={messages} isLoading={isLoading} onSend={sendMessage} mode={mode} onSetMode={setMode} isToggling={isToggling} onUploadComplete={refreshDocuments} onAddDocument={addDocument} />;
-    }
-  };
-
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
         mode={mode}
         documents={documents}
         onClearChat={clearChat}
@@ -65,23 +43,84 @@ export default function App() {
         activeSessionId={activeSessionId}
         onSelectSession={selectSession}
         onDeleteSession={deleteSession}
-        onDocumentClick={(doc) => {
-          setActivePreviewDoc(doc);
-          setActiveTab('preview');
-        }}
+        onDocumentClick={(doc) => navigate(`/documents/${encodeURIComponent(doc)}`)}
         onDeleteDocument={handleDeleteDocument}
       />
-      
+
       <main className="flex-1 flex flex-col bg-white dark:bg-slate-950 relative min-w-0">
-        {/* We moved the header logic into ChatInterface so it matches Stitch perfectly. 
-            For the upload tab, it just renders normally. */}
-        {renderContent()}
+        <Routes>
+          <Route path="/" element={<Navigate to="/chat" replace />} />
+          <Route
+            path="/chat"
+            element={
+              <ChatInterface
+                messages={messages}
+                isLoading={isLoading}
+                onSend={sendMessage}
+                mode={mode}
+                onSetMode={setMode}
+                isToggling={isToggling}
+                activeSessionId={activeSessionId}
+                onUploadComplete={refreshDocuments}
+                onAddDocument={addDocument}
+              />
+            }
+          />
+          <Route
+            path="/upload"
+            element={
+              <RoutePage isLocal={mode?.mode === 'local'} title="Upload Documents">
+                <DocumentUpload onUploadComplete={refreshDocuments} sessionId={activeSessionId} />
+              </RoutePage>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={<Dashboard analytics={analytics} isLoading={isDashboardLoading} mode={mode} />}
+          />
+          <Route
+            path="/documents/:filename"
+            element={<DocumentPreviewPage onClose={() => navigate('/chat')} />}
+          />
+          <Route path="*" element={<Navigate to="/chat" replace />} />
+        </Routes>
       </main>
 
-      {/* Right Insights Panel - Visible alongside the chat */}
-      {activeTab === 'chat' && (
+      {location.pathname === '/chat' && (
         <RightPanel documents={documents} metrics={metrics} mode={mode} />
       )}
     </div>
   );
+}
+
+function RoutePage({
+  children,
+  isLocal,
+  title,
+}: {
+  children: ReactNode;
+  isLocal: boolean;
+  title: string;
+}) {
+  return (
+    <div className="flex flex-col w-full relative" style={{ height: '100%' }}>
+      <Header isLocal={isLocal} title={title} />
+      <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/70" style={{ padding: '2rem' }}>
+        <div className="mx-auto" style={{ maxWidth: '72rem' }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DocumentPreviewPage({ onClose }: { onClose: () => void }) {
+  const params = useParams();
+  const filename = params.filename ? decodeURIComponent(params.filename) : null;
+
+  if (!filename) {
+    return <Navigate to="/chat" replace />;
+  }
+
+  return <DocumentReader filename={filename} onClose={onClose} />;
 }

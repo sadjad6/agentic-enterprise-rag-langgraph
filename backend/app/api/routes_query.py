@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.agent.graph import run_agent
-from app.core.language_detect import detect_language
-from app.dependencies import get_cost_tracker, get_rag_pipeline
+from app.config import get_settings
+from app.dependencies import get_analytics_service, get_cost_tracker, get_rag_pipeline
 from app.gdpr.anonymizer import anonymize_text, contains_pii
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class QueryRequest(BaseModel):
 
     query: str = Field(..., min_length=1, max_length=5000)
     mode: Literal["rag", "agent"] = "agent"
-    session_id: str = "default"
+    session_id: str = Field(..., min_length=1, max_length=255)
     access_level: str = "public"
     anonymize: bool = False
 
@@ -81,7 +81,7 @@ async def _handle_rag_query(
         access_level=request.access_level,
         session_id=request.session_id,
     )
-    return QueryResponse(
+    response = QueryResponse(
         answer=result.answer,
         sources=[SourceInfo(**s) for s in result.sources],
         language=result.language,
@@ -90,6 +90,13 @@ async def _handle_rag_query(
         mode_used="rag",
         pii_detected=pii_detected,
     )
+    _record_query_analytics(
+        session_id=request.session_id,
+        query_mode="rag",
+        tokens_used=response.tokens_used,
+        cost_usd=response.cost_usd,
+    )
+    return response
 
 
 async def _handle_agent_query(
@@ -103,8 +110,6 @@ async def _handle_agent_query(
 
     # Track cost for agent queries
     tracker = get_cost_tracker()
-    from app.config import get_settings
-
     settings = get_settings()
     usage = tracker.track_request(
         model=settings.active_llm_model,
@@ -113,7 +118,7 @@ async def _handle_agent_query(
         session_id=request.session_id,
     )
 
-    return QueryResponse(
+    response = QueryResponse(
         answer=result.get("answer", ""),
         sources=[],
         language=result.get("language", "en"),
@@ -124,3 +129,34 @@ async def _handle_agent_query(
         agent_steps=result.get("steps", 0),
         tool_results=result.get("tool_results", []),
     )
+    _record_query_analytics(
+        session_id=request.session_id,
+        query_mode="agent",
+        tokens_used=response.tokens_used,
+        cost_usd=response.cost_usd,
+    )
+    return response
+
+
+def _record_query_analytics(
+    *,
+    session_id: str,
+    query_mode: str,
+    tokens_used: dict[str, int],
+    cost_usd: float,
+) -> None:
+    """Persist analytics for successful query completions."""
+    try:
+        settings = get_settings()
+        analytics = get_analytics_service()
+        analytics.record_query(
+            session_id=session_id,
+            query_mode=query_mode,
+            system_mode=settings.system_mode.value,
+            model=settings.active_llm_model,
+            input_tokens=int(tokens_used.get("input", 0)),
+            output_tokens=int(tokens_used.get("output", 0)),
+            cost_usd=cost_usd,
+        )
+    except Exception as exc:
+        logger.warning("Failed to record query analytics: %s", exc)

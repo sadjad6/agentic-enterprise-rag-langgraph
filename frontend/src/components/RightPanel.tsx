@@ -1,5 +1,6 @@
 /** RightPanel — matches the Stitch dashboard right insights panel layout. Dynamic data from props. */
 
+import { useNavigate } from 'react-router-dom';
 import type { CostMetrics, ModeInfo } from '../lib/api';
 
 interface RightPanelProps {
@@ -9,6 +10,7 @@ interface RightPanelProps {
 }
 
 export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
+  const navigate = useNavigate();
   const totalTokens = metrics
     ? metrics.total_input_tokens + metrics.total_output_tokens
     : 0;
@@ -67,7 +69,7 @@ export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
       >
         <CostTrackingSection totalTokens={totalTokens} metrics={metrics} />
         <SystemInfoSection mode={mode} metrics={metrics} />
-        <AnalyticsCTA />
+        <AnalyticsCTA onNavigate={() => navigate('/dashboard')} />
       </div>
     </aside>
   );
@@ -181,7 +183,7 @@ function SystemInfoSection({ mode, metrics }: { mode: ModeInfo | null; metrics: 
 
 /* ── Analytics CTA ────────────────────────────────────────── */
 
-function AnalyticsCTA() {
+function AnalyticsCTA({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="bg-primary rounded-2xl relative overflow-hidden group flex flex-col" style={{ padding: '1.25rem' }}>
       <div className="absolute -right-4 -bottom-4 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform pointer-events-none" style={{ width: '6rem', height: '6rem' }} />
@@ -189,7 +191,11 @@ function AnalyticsCTA() {
       <p className="text-white text-sm font-medium relative z-10" style={{ marginBottom: '1rem' }}>
         Detailed usage insights available in Dashboard
       </p>
-      <button className="w-full bg-white text-primary rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors relative z-10 text-center" style={{ padding: '0.5rem 0' }}>
+      <button
+        onClick={onNavigate}
+        className="w-full bg-white text-primary rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors relative z-10 text-center"
+        style={{ padding: '0.5rem 0' }}
+      >
         View Analytics
       </button>
     </div>

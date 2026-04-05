@@ -14,6 +14,7 @@ interface ChatInterfaceProps {
   mode: ModeInfo | null;
   onSetMode: (targetMode: 'local' | 'cloud') => void;
   isToggling: boolean;
+  activeSessionId?: string | null;
   onUploadComplete?: () => void;
   onAddDocument?: (fileName: string) => void;
 }
@@ -25,6 +26,7 @@ export function ChatInterface({
   mode,
   onSetMode,
   isToggling,
+  activeSessionId,
   onUploadComplete,
   onAddDocument,
 }: ChatInterfaceProps) {
@@ -35,10 +37,8 @@ export function ChatInterface({
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      // You can add api to imports if missing, wait I'll add it in the next chunk if needed. Wait I forgot to import api!
-      // I'll import it in the next step. Let's assume it's imported for now or I will fix it.
       const { api } = await import('../lib/api');
-      await api.upload(file);
+      await api.upload(file, 'public', activeSessionId ?? undefined);
       onUploadComplete?.();
       onAddDocument?.(file.name);
       alert(`File ${file.name} uploaded successfully!`);

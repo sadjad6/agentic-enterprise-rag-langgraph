@@ -10,9 +10,10 @@ from app.core.document_processor import (
     extract_text,
     generate_embeddings,
 )
+from app.config import get_settings
 from app.core.language_detect import detect_language
 from app.core.llm_provider import get_embeddings
-from app.dependencies import get_vector_store
+from app.dependencies import get_analytics_service, get_vector_store
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -26,6 +27,7 @@ class UploadResponse:
 async def upload_document(
     file: UploadFile,
     access_level: str = "public",
+    session_id: str | None = None,
 ) -> dict:
     """Upload and ingest a document into the vector store.
 
@@ -70,6 +72,18 @@ async def upload_document(
             "Ingested '%s': %d chunks, language=%s",
             file.filename, inserted, language,
         )
+
+        try:
+            settings = get_settings()
+            get_analytics_service().record_upload(
+                filename=file.filename,
+                chunks_created=inserted,
+                language=language,
+                system_mode=settings.system_mode.value,
+                session_id=session_id,
+            )
+        except Exception as exc:
+            logger.warning("Failed to record upload analytics: %s", exc)
 
         return {
             "status": "success",

@@ -12,7 +12,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api import routes_health, routes_metrics, routes_mode, routes_query, routes_upload
+from app.api import (
+    routes_analytics,
+    routes_health,
+    routes_metrics,
+    routes_mode,
+    routes_query,
+    routes_upload,
+)
 from app.config import get_settings
 from app.dependencies import initialize_services, shutdown_services
 from app.integrations import slack_bot, teams_bot
@@ -72,6 +79,7 @@ app.mount(
 # ── Register Routes ──────────────────────────────────────────
 app.include_router(routes_query.router, tags=["query"])
 app.include_router(routes_upload.router, tags=["upload"])
+app.include_router(routes_analytics.router, tags=["analytics"])
 app.include_router(routes_metrics.router, tags=["metrics"])
 app.include_router(routes_health.router, tags=["health"])
 app.include_router(routes_mode.router, tags=["mode"])
@@ -87,5 +95,13 @@ async def root() -> dict:
         "version": "1.0.0",
         "mode": settings.system_mode.value,
         "docs": "/docs",
-        "endpoints": ["/query", "/upload", "/documents", "/metrics", "/health", "/mode"],
+        "endpoints": [
+            "/query",
+            "/upload",
+            "/documents",
+            "/analytics/dashboard",
+            "/metrics",
+            "/health",
+            "/mode",
+        ],
     }

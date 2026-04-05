@@ -1,13 +1,10 @@
 /** Sidebar — matches the Stitch dashboard left sidebar layout. Dynamic data from props. */
 
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import type { ModeInfo } from '../lib/api';
 import type { ChatSession } from '../hooks/useApp';
 
-type Tab = 'chat' | 'documents' | 'upload' | 'dashboard' | 'preview';
-
 interface SidebarProps {
-  activeTab: Tab;
-  onTabChange: (tab: Tab) => void;
   mode: ModeInfo | null;
   documents: string[];
   onClearChat: () => void;
@@ -20,8 +17,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  activeTab,
-  onTabChange,
   mode,
   documents,
   onClearChat,
@@ -32,8 +27,15 @@ export function Sidebar({
   onDocumentClick,
   onDeleteDocument,
 }: SidebarProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const isLocal = mode?.mode === 'local';
   const modeName = isLocal ? 'Local Mode' : 'Cloud Mode';
+  const navItems = [
+    { to: '/chat', label: 'Chat', icon: 'chat_bubble' },
+    { to: '/upload', label: 'Upload', icon: 'upload_file' },
+    { to: '/dashboard', label: 'Dashboard', icon: 'monitoring' },
+  ];
 
   return (
     <aside 
@@ -57,7 +59,10 @@ export function Sidebar({
       {/* New Chat */}
       <div style={{ padding: '0 1rem', marginBottom: '1rem' }}>
         <button
-          onClick={() => { onClearChat(); onTabChange('chat'); }}
+          onClick={() => {
+            onClearChat();
+            navigate('/chat');
+          }}
           className="w-full flex items-center justify-center bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-colors shadow-sm shadow-primary/20"
           style={{ gap: '0.5rem', padding: '0.625rem 0', borderRadius: '0.75rem' }}
         >
@@ -71,6 +76,27 @@ export function Sidebar({
         className="custom-scrollbar flex flex-col"
         style={{ flex: '1 1 0%', minHeight: 0, overflowY: 'auto', padding: '0 0.5rem', gap: '1.5rem' }}
       >
+        <div>
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest" style={{ padding: '0 1rem', marginBottom: '0.5rem' }}>Workspace</p>
+          <div className="flex flex-col" style={{ gap: '0.125rem' }}>
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `w-full flex items-center text-sm font-medium transition-colors ${
+                    isActive ? 'bg-primary/5 text-primary' : 'text-slate-600 hover:bg-slate-50'
+                  }`
+                }
+                style={{ gap: '0.75rem', padding: '0.625rem 1rem', borderRadius: '0.5rem' }}
+              >
+                <span className="material-symbols-outlined block" style={{ fontSize: '1.125rem' }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        </div>
+
         {/* Recent Chats */}
         <div>
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest" style={{ padding: '0 1rem', marginBottom: '0.5rem' }}>Recent</p>
@@ -81,7 +107,7 @@ export function Sidebar({
                </div>
             ) : (
                sessions.map((session) => {
-                 const isActive = activeSessionId === session.id && activeTab === 'chat';
+                 const isActive = activeSessionId === session.id && location.pathname === '/chat';
                  return (
                    <div
                      key={session.id}
@@ -93,7 +119,7 @@ export function Sidebar({
                      style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem' }}
                      onClick={() => {
                         onSelectSession(session.id);
-                        onTabChange('chat');
+                        navigate('/chat');
                      }}
                    >
                      <div className="flex items-center truncate max-w-[80%]" style={{ gap: '0.75rem' }}>
@@ -123,7 +149,7 @@ export function Sidebar({
         <div>
           <div className="flex items-center justify-between" style={{ padding: '0 1rem', marginBottom: '0.5rem' }}>
             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Collections</p>
-            <button onClick={() => onTabChange('upload')} className="cursor-pointer flex items-center justify-center">
+            <button onClick={() => navigate('/upload')} className="cursor-pointer flex items-center justify-center">
               <span className="material-symbols-outlined text-slate-400 hover:text-primary transition-colors block" style={{ fontSize: '0.875rem' }}>add_circle</span>
             </button>
           </div>

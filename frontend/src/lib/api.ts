@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 interface QueryRequest {
   query: string;
   mode?: 'rag' | 'agent';
-  session_id?: string;
+  session_id: string;
   access_level?: string;
   anonymize?: boolean;
 }
@@ -56,6 +56,58 @@ export interface CostMetrics {
   }>;
 }
 
+export interface DashboardSummary {
+  total_conversations: number;
+  total_user_messages: number;
+  total_assistant_responses: number;
+  total_requests: number;
+  total_uploads: number;
+  total_tokens: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_cost_usd: number;
+  indexed_documents: number;
+}
+
+export interface DashboardBreakdownItem {
+  name: string;
+  requests: number;
+  tokens: number;
+  cost_usd: number;
+}
+
+export interface DashboardActivityPoint {
+  date: string;
+  queries: number;
+  uploads: number;
+  tokens: number;
+  cost_usd: number;
+}
+
+export interface DashboardRecentActivity {
+  event_type: 'query' | 'upload';
+  created_at: string;
+  session_id: string | null;
+  query_mode: string | null;
+  system_mode: string | null;
+  model: string | null;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  filename: string | null;
+  chunks_created: number;
+  language: string | null;
+}
+
+export interface DashboardAnalytics {
+  summary: DashboardSummary;
+  activity_over_time: DashboardActivityPoint[];
+  mode_breakdown: DashboardBreakdownItem[];
+  model_breakdown: DashboardBreakdownItem[];
+  recent_activity: DashboardRecentActivity[];
+  has_data: boolean;
+}
+
 export interface UploadResult {
   status: string;
   filename: string;
@@ -88,11 +140,15 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  upload: async (file: File, accessLevel = 'public'): Promise<UploadResult> => {
+  upload: async (file: File, accessLevel = 'public', sessionId?: string): Promise<UploadResult> => {
     const formData = new FormData();
     formData.append('file', file);
+    const search = new URLSearchParams({ access_level: accessLevel });
+    if (sessionId) {
+      search.set('session_id', sessionId);
+    }
     const response = await fetch(
-      `${BASE_URL}/upload?access_level=${encodeURIComponent(accessLevel)}`,
+      `${BASE_URL}/upload?${search.toString()}`,
       { method: 'POST', body: formData }
     );
     if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
@@ -110,6 +166,8 @@ export const api = {
     }),
 
   getMetrics: () => request<CostMetrics>('/metrics'),
+
+  getDashboardAnalytics: () => request<DashboardAnalytics>('/analytics/dashboard'),
 
   getHealth: () => request<HealthStatus>('/health'),
 

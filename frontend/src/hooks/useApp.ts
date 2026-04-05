@@ -1,7 +1,7 @@
 /** Custom hooks for managing application state. */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { api, type QueryResponse, type CostMetrics, type ModeInfo } from '../lib/api';
+import { api, type QueryResponse, type CostMetrics, type DashboardAnalytics, type ModeInfo } from '../lib/api';
 
 /* ── Chat Message Types ────────────────────────────────────── */
 export interface ChatMessage {
@@ -104,7 +104,7 @@ export function useChat() {
     setIsLoading(true);
 
     try {
-      const response = await api.query({ query, mode: queryMode });
+      const response = await api.query({ query, mode: queryMode, session_id: currentSessionId! });
       const assistantMsg: ChatMessage = {
         id: `msg-${++idCounter.current}`,
         role: 'assistant',
@@ -221,6 +221,30 @@ export function useMetrics(pollIntervalMs = 10000) {
   }, [fetchMetrics, pollIntervalMs]);
 
   return { metrics, refresh: fetchMetrics };
+}
+
+export function useDashboard(pollIntervalMs = 15000) {
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      const data = await api.getDashboardAnalytics();
+      setAnalytics(data);
+    } catch {
+      /* backend not yet available */
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboard();
+    const interval = setInterval(fetchDashboard, pollIntervalMs);
+    return () => clearInterval(interval);
+  }, [fetchDashboard, pollIntervalMs]);
+
+  return { analytics, isLoading, refresh: fetchDashboard };
 }
 
 const DOCUMENTS_STORAGE_KEY = 'aether_documents';

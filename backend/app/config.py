@@ -6,6 +6,7 @@ with validation. Supports local (GDPR) and cloud system modes.
 
 from enum import Enum
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -57,6 +58,7 @@ class Settings(BaseSettings):
     backend_port: int = 8000
     frontend_url: str = "http://localhost:5173"
     log_level: str = "info"
+    analytics_db_path: str = str(Path("data") / "analytics.db")
 
     # ── RAG ──────────────────────────────────────────────────
     chunk_size: int = 1000

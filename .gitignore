@@ -21,6 +21,7 @@ frontend/dist/
 
 # Docker
 weaviate_data/
+backend/data/*.db
 
 # OS
 .DS_Store

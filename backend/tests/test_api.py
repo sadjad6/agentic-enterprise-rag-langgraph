@@ -68,6 +68,48 @@ class TestMetricsEndpoint:
         assert "total_cost_usd" in data
 
 
+class TestAnalyticsEndpoint:
+    """Tests for the dashboard analytics endpoint."""
+
+    def test_get_dashboard_returns_summary(self, monkeypatch) -> None:
+        """GET /analytics/dashboard should return dashboard analytics payload."""
+
+        class FakeAnalytics:
+            def get_dashboard_data(self, document_count=None) -> dict:
+                return {
+                    "summary": {
+                        "total_conversations": 1,
+                        "total_user_messages": 1,
+                        "total_assistant_responses": 1,
+                        "total_requests": 1,
+                        "total_uploads": 0,
+                        "total_tokens": 10,
+                        "total_input_tokens": 4,
+                        "total_output_tokens": 6,
+                        "total_cost_usd": 0.0,
+                        "indexed_documents": document_count,
+                    },
+                    "activity_over_time": [],
+                    "mode_breakdown": [],
+                    "model_breakdown": [],
+                    "recent_activity": [],
+                    "has_data": True,
+                }
+
+        class FakeVectorStore:
+            def get_document_sources(self) -> list[str]:
+                return ["handbook.pdf", "policy.md"]
+
+        monkeypatch.setattr("app.api.routes_analytics.get_analytics_service", lambda: FakeAnalytics())
+        monkeypatch.setattr("app.api.routes_analytics.get_vector_store", lambda: FakeVectorStore())
+
+        response = client.get("/analytics/dashboard")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["summary"]["indexed_documents"] == 2
+        assert "recent_activity" in data
+
+
 class TestQueryEndpoint:
     """Tests for the /query endpoint."""
 
@@ -79,6 +121,11 @@ class TestQueryEndpoint:
     def test_query_missing_field(self) -> None:
         """Missing query field should be rejected."""
         response = client.post("/query", json={})
+        assert response.status_code == 422
+
+    def test_query_requires_session_id(self) -> None:
+        """session_id is required for durable analytics tracking."""
+        response = client.post("/query", json={"query": "What is the policy?"})
         assert response.status_code == 422
 
 

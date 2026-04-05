@@ -6,6 +6,7 @@ import { api } from '../lib/api';
 
 interface DocumentUploadProps {
   onUploadComplete: () => void;
+  sessionId?: string | null;
 }
 
 interface UploadState {
@@ -15,7 +16,7 @@ interface UploadState {
   error?: string;
 }
 
-export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
+export function DocumentUpload({ onUploadComplete, sessionId }: DocumentUploadProps) {
   const [uploads, setUploads] = useState<UploadState[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -31,7 +32,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       );
 
       try {
-        const result = await api.upload(upload.file);
+        const result = await api.upload(upload.file, 'public', sessionId ?? undefined);
         setUploads((prev) =>
           prev.map((u) =>
             u.file === upload.file

@@ -5,8 +5,8 @@ RAGPipeline to be used across API routes.
 """
 
 import logging
-from functools import lru_cache
 
+from app.analytics.service import AnalyticsService
 from app.config import get_settings
 from app.core.llm_provider import get_embeddings
 from app.core.rag_pipeline import RAGPipeline
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 _cost_tracker = CostTracker()
 _vector_store: VectorStore | None = None
 _rag_pipeline: RAGPipeline | None = None
+_analytics_service: AnalyticsService | None = None
 
 
 def get_cost_tracker() -> CostTracker:
@@ -35,6 +36,15 @@ def get_vector_store() -> VectorStore:
     return _vector_store
 
 
+def get_analytics_service() -> AnalyticsService:
+    """Return the persistent analytics service instance."""
+    global _analytics_service  # noqa: PLW0603
+    if _analytics_service is None:
+        settings = get_settings()
+        _analytics_service = AnalyticsService(settings.analytics_db_path)
+    return _analytics_service
+
+
 def get_rag_pipeline() -> RAGPipeline:
     """Return the global RAG pipeline instance (lazy init)."""
     global _rag_pipeline  # noqa: PLW0603
@@ -48,6 +58,12 @@ def get_rag_pipeline() -> RAGPipeline:
 
 def initialize_services() -> None:
     """Connect to external services at startup."""
+    try:
+        get_analytics_service()
+        logger.info("Analytics service initialized")
+    except Exception as e:
+        logger.warning("Analytics initialization failed: %s", e)
+
     try:
         vs = get_vector_store()
         vs.connect()
@@ -68,7 +84,9 @@ def initialize_services() -> None:
 def shutdown_services() -> None:
     """Disconnect from external services on shutdown."""
     global _vector_store  # noqa: PLW0603
+    global _analytics_service  # noqa: PLW0603
     if _vector_store:
         _vector_store.close()
         _vector_store = None
+    _analytics_service = None
     logger.info("Services shut down")
