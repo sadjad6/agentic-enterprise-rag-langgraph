@@ -22,9 +22,15 @@ SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 def _extract_text_pdf(content: bytes, filename: str) -> str:
     """Extract text from a PDF file with inline markdown figures using PyMuPDF4LLM."""
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+    import re as _re
+    import os as _os
+
+    # Use the original filename (sanitized) so extracted images get clean names
+    safe_name = _re.sub(r'[^\w\-.]', '_', Path(filename).stem)
+    tmp_dir = tempfile.mkdtemp()
+    tmp_path = _os.path.join(tmp_dir, f"{safe_name}.pdf")
+    with open(tmp_path, "wb") as tmp:
         tmp.write(content)
-        tmp_path = tmp.name
 
     try:
         # Create output directory for images if it doesn't exist
@@ -53,8 +59,8 @@ def _extract_text_pdf(content: bytes, filename: str) -> str:
         
         return md_text
     finally:
-        import os
-        os.unlink(tmp_path)
+        import shutil
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 def _extract_text_markdown(content: bytes, filename: str) -> str:
