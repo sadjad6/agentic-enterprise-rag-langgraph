@@ -37,8 +37,8 @@ export function Sidebar({
 
   return (
     <aside 
-      className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 h-screen overflow-hidden"
-      style={{ width: '16rem' }}
+      className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0"
+      style={{ width: '16rem', height: '100vh', overflow: 'hidden' }}
     >
       {/* Logo / Brand */}
       <div className="flex items-center" style={{ padding: '1.5rem', gap: '0.75rem' }}>
@@ -67,7 +67,10 @@ export function Sidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col" style={{ padding: '0 0.5rem', gap: '1.5rem' }}>
+      <nav
+        className="custom-scrollbar flex flex-col"
+        style={{ flex: '1 1 0%', minHeight: 0, overflowY: 'auto', padding: '0 0.5rem', gap: '1.5rem' }}
+      >
         {/* Recent Chats */}
         <div>
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest" style={{ padding: '0 1rem', marginBottom: '0.5rem' }}>Recent</p>

@@ -14,10 +14,28 @@ export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
     : 0;
 
   return (
-    <aside className="border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0 hidden xl:flex flex-col h-screen overflow-hidden" style={{ width: '20rem' }}>
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-8" style={{ padding: '1.5rem' }}>
-
-        {/* Retrieved Documents */}
+    <aside
+      className="right-panel border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+      style={{
+        width: '20rem',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Scrollable Documents section — grows/shrinks, scrolls when many docs */}
+      <div
+        className="custom-scrollbar"
+        style={{
+          flex: '1 1 0%',
+          minHeight: 0,
+          overflowY: 'auto',
+          padding: '1.5rem',
+          paddingBottom: '0.5rem',
+        }}
+      >
         <section>
           <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest" style={{ marginBottom: '1rem' }}>
             Retrieved Documents
@@ -32,16 +50,24 @@ export function RightPanel({ documents, metrics, mode }: RightPanelProps) {
             )}
           </div>
         </section>
+      </div>
 
-        {/* Cost Tracking */}
+      {/* Fixed bottom section — always visible */}
+      <div
+        style={{
+          flexShrink: 0,
+          padding: '0 1.5rem 1.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.25rem',
+          borderTop: '1px solid',
+          borderColor: 'rgb(226 232 240)',
+          paddingTop: '1.25rem',
+        }}
+      >
         <CostTrackingSection totalTokens={totalTokens} metrics={metrics} />
-
-        {/* System Info */}
         <SystemInfoSection mode={mode} metrics={metrics} />
-
-        {/* Analytics CTA */}
         <AnalyticsCTA />
-
       </div>
     </aside>
   );

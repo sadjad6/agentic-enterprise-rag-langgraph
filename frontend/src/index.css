@@ -17,9 +17,24 @@
   padding: 0;
 }
 
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Right Panel responsive visibility ─────────────────────── */
+.right-panel {
+  display: none !important;
+}
+@media (min-width: 1280px) {
+  .right-panel {
+    display: flex !important;
+  }
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────── */
