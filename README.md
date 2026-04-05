@@ -60,6 +60,10 @@ A **GDPR-compliant Enterprise RAG (Retrieval-Augmented Generation) system** with
 - Node.js 18+, npm
 - Docker & Docker Compose
 - (Optional) Ollama for local LLM
+- **OCR Dependencies (If running locally via `uvicorn` on Windows):** 
+  - [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki) (must be added to PATH)
+  - [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases) (must be added to PATH)
+  *(Note: The provided Dockerfile handles this automatically if deploying via Docker)*
 
 ### 1. Clone & Configure
 

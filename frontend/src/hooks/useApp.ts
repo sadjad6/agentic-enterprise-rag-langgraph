@@ -223,21 +223,44 @@ export function useMetrics(pollIntervalMs = 10000) {
   return { metrics, refresh: fetchMetrics };
 }
 
-/* ── useDocuments Hook ─────────────────────────────────────── */
+const DOCUMENTS_STORAGE_KEY = 'aether_documents';
+
 export function useDocuments() {
-  const [documents, setDocuments] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(DOCUMENTS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const fetchDocuments = useCallback(async () => {
     try {
       const data = await api.getDocuments();
-      setDocuments(data.documents);
+      if (data.documents && data.documents.length > 0) {
+         setDocuments(data.documents);
+      }
     } catch {
       /* backend not yet available */
     }
   }, []);
 
+  const addDocument = useCallback((name: string) => {
+    setDocuments(prev => {
+      if (!prev.includes(name)) {
+        return [...prev, name];
+      }
+      return prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(documents));
+  }, [documents]);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch; setState is in a callback, not synchronous
   useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
 
-  return { documents, refresh: fetchDocuments };
+  return { documents, refresh: fetchDocuments, addDocument };
 }

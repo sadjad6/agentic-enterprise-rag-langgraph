@@ -12,6 +12,8 @@ import markdown
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.embeddings import Embeddings
 from pypdf import PdfReader
+from pdf2image import convert_from_bytes
+import pytesseract
 
 from app.config import get_settings
 
@@ -20,11 +22,32 @@ logger = logging.getLogger(__name__)
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 
+def _extract_text_pdf_ocr(content: bytes) -> str:
+    """Extract text from an image-based PDF using OCR."""
+    logger.info("Basic PDF extraction yielded insufficient text. Falling back to OCR (PyTesseract)...")
+    images = convert_from_bytes(content)
+    text_chunks = []
+    for i, img in enumerate(images):
+        page_text = pytesseract.image_to_string(img)
+        text_chunks.append(page_text)
+    return "\n\n".join(text_chunks)
+
+
 def _extract_text_pdf(content: bytes) -> str:
-    """Extract text from a PDF file."""
+    """Extract text from a PDF file with OCR fallback."""
     reader = PdfReader(BytesIO(content))
     pages = [page.extract_text() or "" for page in reader.pages]
-    return "\n\n".join(pages)
+    extracted = "\n\n".join(pages)
+    
+    # If the text is very short (e.g. only whitespaces or metadata), assume it's image-based.
+    if len(extracted.strip()) < 50:
+        try:
+            return _extract_text_pdf_ocr(content)
+        except Exception as e:
+            logger.error("OCR fallback failed: %s. Please ensure Tesseract and poppler-utils are installed.", e)
+            return extracted
+            
+    return extracted
 
 
 def _extract_text_markdown(content: bytes) -> str:

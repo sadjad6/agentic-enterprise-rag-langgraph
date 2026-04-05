@@ -15,6 +15,7 @@ interface ChatInterfaceProps {
   onSetMode: (targetMode: 'local' | 'cloud') => void;
   isToggling: boolean;
   onUploadComplete?: () => void;
+  onAddDocument?: (fileName: string) => void;
 }
 
 export function ChatInterface({
@@ -25,6 +26,7 @@ export function ChatInterface({
   onSetMode,
   isToggling,
   onUploadComplete,
+  onAddDocument,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -38,6 +40,7 @@ export function ChatInterface({
       const { api } = await import('../lib/api');
       await api.upload(file);
       onUploadComplete?.();
+      onAddDocument?.(file.name);
       alert(`File ${file.name} uploaded successfully!`);
     } catch (e) {
       alert(`Upload failed: ${e instanceof Error ? e.message : e}`);
