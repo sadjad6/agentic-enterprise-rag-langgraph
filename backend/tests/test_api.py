@@ -109,6 +109,43 @@ class TestAnalyticsEndpoint:
         assert data["summary"]["indexed_documents"] == 2
         assert "recent_activity" in data
 
+    def test_get_dashboard_uses_analytics_fallback_when_vector_store_fails(self, monkeypatch) -> None:
+        """GET /analytics/dashboard should still return analytics when vector store is unavailable."""
+
+        class FakeAnalytics:
+            def get_dashboard_data(self, document_count=None) -> dict:
+                return {
+                    "summary": {
+                        "total_conversations": 0,
+                        "total_user_messages": 0,
+                        "total_assistant_responses": 0,
+                        "total_requests": 0,
+                        "total_uploads": 1,
+                        "total_tokens": 0,
+                        "total_input_tokens": 0,
+                        "total_output_tokens": 0,
+                        "total_cost_usd": 0.0,
+                        "indexed_documents": 1 if document_count is None else document_count,
+                    },
+                    "activity_over_time": [],
+                    "mode_breakdown": [],
+                    "model_breakdown": [],
+                    "recent_activity": [],
+                    "has_data": True,
+                }
+
+        class BrokenVectorStore:
+            def get_document_sources(self) -> list[str]:
+                raise RuntimeError("weaviate unavailable")
+
+        monkeypatch.setattr("app.api.routes_analytics.get_analytics_service", lambda: FakeAnalytics())
+        monkeypatch.setattr("app.api.routes_analytics.get_vector_store", lambda: BrokenVectorStore())
+
+        response = client.get("/analytics/dashboard")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["summary"]["indexed_documents"] == 1
+
 
 class TestQueryEndpoint:
     """Tests for the /query endpoint."""

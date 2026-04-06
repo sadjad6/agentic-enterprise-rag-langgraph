@@ -146,8 +146,15 @@ Switch modes via the UI toggle or `POST /mode` endpoint.
 
 ```bash
 cd backend
-uv sync --group dev
+uv sync --extra dev
 uv run pytest tests/ -v
+```
+
+```bash
+cd frontend
+npm install
+npm run test:run
+npm run build
 ```
 
 ## Evaluation

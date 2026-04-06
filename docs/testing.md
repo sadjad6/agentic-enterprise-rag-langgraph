@@ -1,260 +1,104 @@
 # Testing Guide
 
-This guide covers running unit tests, integration tests, and manual testing workflows for both Local and Cloud modes.
+This guide covers the automated backend and frontend test flows for the repository.
 
 ---
 
 ## Test Structure
 
-```
+```text
 backend/tests/
-├── __init__.py
-├── test_agent.py          # LangGraph agent node tests
-├── test_anonymizer.py     # GDPR PII anonymization tests
-├── test_api.py            # FastAPI endpoint tests
-├── test_cost_tracker.py   # Token/cost tracking tests
-└── test_rag_pipeline.py   # RAG retrieval pipeline tests
+- test_agent.py
+- test_analytics_integration.py
+- test_analytics_service.py
+- test_anonymizer.py
+- test_api.py
+- test_cost_tracker.py
+- test_rag_pipeline.py
+
+frontend/src/
+- App.test.tsx
+- components/Dashboard.test.tsx
+- components/DocumentUpload.test.tsx
+- hooks/useApp.test.tsx
+- test/setup.ts
 ```
 
 ---
 
-## Running Unit Tests
+## Running Backend Tests
 
-### Prerequisites
-
-Install development dependencies:
+Install backend development dependencies before invoking pytest:
 
 ```bash
 cd backend
-uv sync --group dev
+uv sync --extra dev
+uv run pytest tests -v
 ```
 
-### Run All Tests
-
-```bash
-cd backend
-uv run pytest tests/ -v
-```
-
-### Run a Specific Test File
+Run a specific backend file:
 
 ```bash
 uv run pytest tests/test_api.py -v
-uv run pytest tests/test_anonymizer.py -v
-uv run pytest tests/test_cost_tracker.py -v
-uv run pytest tests/test_rag_pipeline.py -v
-uv run pytest tests/test_agent.py -v
+uv run pytest tests/test_analytics_service.py -v
+uv run pytest tests/test_analytics_integration.py -v
 ```
 
-### Run a Specific Test Function
-
-```bash
-uv run pytest tests/test_api.py::test_health_endpoint -v
-```
-
-### Run with Coverage (If Available)
-
-```bash
-uv run pytest tests/ -v --tb=short
-```
+The backend suite covers:
+- FastAPI API surface, including `/analytics/dashboard`
+- Persistent analytics aggregation and reset behavior
+- Query and upload analytics recording side effects
+- Existing RAG, agent, anonymizer, and cost-tracker logic
 
 ---
 
-## Test Descriptions
+## Running Frontend Tests
 
-### `test_api.py` — API Endpoint Tests
-
-Tests the FastAPI HTTP endpoints directly using the test client:
-
-| Test | Validates |
-|------|-----------|
-| Health endpoint | Returns `200` with `status: healthy` |
-| Mode endpoint | Returns current system mode |
-| Query endpoint | Accepts queries and returns structured responses |
-| Upload endpoint | Accepts file uploads and returns chunk counts |
-| Documents endpoint | Lists indexed documents |
-| Metrics endpoint | Returns cost/token tracking data |
-
-### `test_anonymizer.py` — GDPR PII Tests
-
-Tests the PII anonymization module:
-
-| Test | Validates |
-|------|-----------|
-| Email detection | Redacts `user@example.com` → `[EMAIL]` |
-| Phone detection | Redacts phone numbers → `[PHONE]` |
-| No-PII pass-through | Clean text passes through unchanged |
-| Mixed content | Multiple PII types in one string |
-| Edge cases | Empty strings, special characters |
-
-### `test_cost_tracker.py` — Cost Tracking Tests
-
-Tests the token counting and cost calculation logic:
-
-| Test | Validates |
-|------|-----------|
-| Token recording | Input/output tokens are tracked per request |
-| Cost calculation | USD cost computed correctly from token counts |
-| Metrics aggregation | Per-model and per-session breakdowns work |
-| Reset functionality | Metrics can be cleared |
-| Edge cases | Zero tokens, missing model info |
-
-### `test_rag_pipeline.py` — RAG Pipeline Tests
-
-Tests the retrieval-augmented generation pipeline:
-
-| Test | Validates |
-|------|-----------|
-| Document chunking | PDFs/TXT split into correct chunk sizes |
-| Embedding generation | Chunks are embedded and stored |
-| Hybrid search | Vector + BM25 retrieval returns relevant results |
-| Source citation | Responses include source metadata |
-| Language detection | DE/EN queries detected correctly |
-
-### `test_agent.py` — Agent Node Tests
-
-Tests the LangGraph agentic workflow:
-
-| Test | Validates |
-|------|-----------|
-| Decision node | Routes to correct tool or direct response |
-| Tool execution | Calculator and external API tools work |
-| Response formatting | Final response is well-structured |
-
----
-
-## Testing by Mode
-
-### Testing Local Mode
-
-1. Start infrastructure:
-   ```bash
-   docker-compose up -d weaviate ollama
-   ```
-
-2. Set `SYSTEM_MODE=local` in `.env`.
-
-3. Start backend:
-   ```bash
-   cd backend
-   uv run uvicorn app.main:app --reload --port 8000
-   ```
-
-4. Run unit tests:
-   ```bash
-   cd backend
-   uv run pytest tests/ -v
-   ```
-
-5. Manual smoke test:
-   ```bash
-   # Health check
-   curl http://localhost:8000/health
-
-   # Check mode
-   curl http://localhost:8000/mode
-
-   # Upload a document
-   curl -X POST http://localhost:8000/upload -F "file=@test.pdf"
-
-   # Query
-   curl -X POST http://localhost:8000/query \
-     -H "Content-Type: application/json" \
-     -d '{"query": "What is in the document?", "mode": "rag"}'
-
-   # Agent query with calculator
-   curl -X POST http://localhost:8000/query \
-     -H "Content-Type: application/json" \
-     -d '{"query": "What is sqrt(144) + 15 * 3?", "mode": "agent"}'
-   ```
-
-### Testing Cloud Mode
-
-1. Set `SYSTEM_MODE=cloud` in `.env` with valid API keys.
-
-2. Start backend (no Docker needed):
-   ```bash
-   cd backend
-   uv run uvicorn app.main:app --reload --port 8000
-   ```
-
-3. Run the same test commands as local mode.
-
-4. Additionally verify cost tracking:
-   ```bash
-   # Check metrics after running queries
-   curl http://localhost:8000/metrics
-
-   # Reset metrics
-   curl -X POST http://localhost:8000/metrics/reset
-   ```
-
----
-
-## Testing the Frontend
-
-### TypeScript Compilation Check
+Install frontend dependencies and run the Vitest suite:
 
 ```bash
 cd frontend
-npx tsc --noEmit
+npm install
+npm run test:run
 ```
 
-Zero errors means the codebase is type-safe.
+For local watch mode:
 
-### Linting
+```bash
+npm test
+```
+
+The frontend suite covers:
+- Route rendering for `/chat`, `/upload`, `/documents/:filename`, and `/dashboard`
+- Navigation from the right-panel Analytics CTA and sidebar Dashboard link
+- Dashboard loading, empty, and populated analytics states
+- Chat `session_id` propagation in `useChat`
+- Upload calls with and without an active session
+
+---
+
+## Build and Lint Verification
+
+Frontend build:
 
 ```bash
 cd frontend
-npm run lint
+npm run build
 ```
 
-### Manual UI Testing Checklist
-
-| # | Test | Expected Result |
-|---|------|-----------------|
-| 1 | Open `http://localhost:5173` | Dashboard loads with 3-column layout |
-| 2 | Verify mode badge in header | Shows LOCAL MODE or CLOUD MODE |
-| 3 | Click "New Chat" | Chat history clears, empty state shows |
-| 4 | Type a message and send | User bubble appears, assistant responds |
-| 5 | Toggle LOCAL ↔ CLOUD | Mode switches, header badge updates |
-| 6 | Upload a document | File appears in sidebar Collections |
-| 7 | Ask about uploaded document | Response includes source citations |
-| 8 | Check Right Panel | Cost tracking and System Info update |
-| 9 | Resize browser window | Layout remains responsive |
-| 10 | Test German query | `"Was ist DSGVO?"` — Response in German |
-
----
-
-## Multilingual Testing
-
-The system auto-detects language and responds in the same language:
-
-```bash
-# English query
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What is the data retention policy?", "mode": "rag"}'
-
-# German query — response should be in German
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Welche Sicherheitsrichtlinien gelten für Remote-Arbeit?", "mode": "rag"}'
-```
-
----
-
-## Linting the Backend
+Backend lint:
 
 ```bash
 cd backend
+uv sync --extra dev
 uv run ruff check .
 uv run ruff format --check .
 ```
 
-To auto-fix:
+---
 
-```bash
-uv run ruff check --fix .
-uv run ruff format .
-```
+## CI
+
+GitHub Actions runs both stacks automatically:
+- Backend: `uv sync --extra dev` then `uv run pytest tests -v`
+- Frontend: `npm ci`, `npm run test:run`, and `npm run build`
