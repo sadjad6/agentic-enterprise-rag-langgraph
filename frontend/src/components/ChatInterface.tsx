@@ -17,6 +17,10 @@ interface ChatInterfaceProps {
   activeSessionId?: string | null;
   onUploadComplete?: () => void;
   onAddDocument?: (fileName: string) => void;
+  sessionTitle?: string;
+  onRenameSession?: (newTitle: string) => void;
+  onDeleteSession?: () => void;
+  onExportChat?: () => void;
 }
 
 export function ChatInterface({
@@ -29,6 +33,10 @@ export function ChatInterface({
   activeSessionId,
   onUploadComplete,
   onAddDocument,
+  sessionTitle,
+  onRenameSession,
+  onDeleteSession,
+  onExportChat,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -51,7 +59,13 @@ export function ChatInterface({
 
   return (
     <div className="flex flex-col w-full relative" style={{ height: '100%' }}>
-      <Header isLocal={isLocal} title="Current Session" />
+      <Header
+        isLocal={isLocal}
+        title={sessionTitle ?? 'Current Session'}
+        onRenameSession={onRenameSession}
+        onDeleteSession={onDeleteSession}
+        onExportChat={onExportChat}
+      />
 
       {/* Main chat area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ padding: '2rem' }}>

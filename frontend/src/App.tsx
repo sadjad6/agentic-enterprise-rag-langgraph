@@ -1,6 +1,6 @@
 /** App — route-backed shell assembling the sidebar and main content panels. */
 
-import type { ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { ChatInterface } from './components/ChatInterface';
@@ -15,11 +15,33 @@ import { api } from './lib/api';
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { messages, isLoading, sendMessage, clearChat, sessions, activeSessionId, selectSession, deleteSession } = useChat();
+  const { messages, isLoading, sendMessage, clearChat, sessions, activeSessionId, selectSession, deleteSession, renameSession } = useChat();
   const { mode, setMode, isToggling } = useMode();
   const { metrics } = useMetrics();
   const { analytics, isLoading: isDashboardLoading } = useDashboard();
   const { documents, refresh: refreshDocuments, addDocument } = useDocuments();
+
+  const activeSession = sessions.find(s => s.id === activeSessionId);
+
+  const handleExportChat = useCallback(() => {
+    if (!activeSession) return;
+    const blob = new Blob(
+      [JSON.stringify(activeSession.messages, null, 2)],
+      { type: 'application/json' },
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeSession.title.replace(/[^a-z0-9]/gi, '_')}_export.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeSession]);
+
+  const handleDeleteActiveSession = useCallback(() => {
+    if (!activeSessionId) return;
+    deleteSession(activeSessionId);
+    navigate('/chat');
+  }, [activeSessionId, deleteSession, navigate]);
 
   const handleDeleteDocument = async (doc: string) => {
     try {
@@ -45,6 +67,8 @@ export default function App() {
         onDeleteSession={deleteSession}
         onDocumentClick={(doc) => navigate(`/documents/${encodeURIComponent(doc)}`)}
         onDeleteDocument={handleDeleteDocument}
+        onSetMode={setMode}
+        isToggling={isToggling}
       />
 
       <main className="flex-1 flex flex-col bg-white dark:bg-slate-950 relative min-w-0">
@@ -63,6 +87,10 @@ export default function App() {
                 activeSessionId={activeSessionId}
                 onUploadComplete={refreshDocuments}
                 onAddDocument={addDocument}
+                sessionTitle={activeSession?.title}
+                onRenameSession={(newTitle) => activeSessionId && renameSession(activeSessionId, newTitle)}
+                onDeleteSession={handleDeleteActiveSession}
+                onExportChat={handleExportChat}
               />
             }
           />

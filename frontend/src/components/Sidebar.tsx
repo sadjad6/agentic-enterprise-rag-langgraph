@@ -1,5 +1,6 @@
 /** Sidebar — matches the Stitch dashboard left sidebar layout. Dynamic data from props. */
 
+import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import type { ModeInfo } from '../lib/api';
 import type { ChatSession } from '../hooks/useApp';
@@ -14,6 +15,8 @@ interface SidebarProps {
   onDeleteSession: (id: string) => void;
   onDocumentClick?: (doc: string) => void;
   onDeleteDocument?: (doc: string) => void;
+  onSetMode?: (targetMode: 'local' | 'cloud') => void;
+  isToggling?: boolean;
 }
 
 export function Sidebar({
@@ -26,7 +29,10 @@ export function Sidebar({
   onDeleteSession,
   onDocumentClick,
   onDeleteDocument,
+  onSetMode,
+  isToggling,
 }: SidebarProps) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isLocal = mode?.mode === 'local';
@@ -191,11 +197,66 @@ export function Sidebar({
         </div>
       </nav>
 
+      {/* Settings Panel (slides up when open) */}
+      {isSettingsOpen && (
+        <div
+          className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 animate-fade-in flex flex-col"
+          style={{ padding: '0.75rem 1rem', gap: '0.5rem' }}
+        >
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest" style={{ padding: '0 0.25rem' }}>
+            Settings
+          </p>
+
+          {/* Mode Toggle */}
+          <button
+            id="sidebar-mode-toggle"
+            onClick={() => onSetMode?.(isLocal ? 'cloud' : 'local')}
+            disabled={isToggling}
+            className="flex items-center w-full text-sm text-slate-600 hover:bg-white transition-colors disabled:opacity-50"
+            style={{ gap: '0.75rem', padding: '0.5rem 0.625rem', borderRadius: '0.5rem' }}
+          >
+            <span className="material-symbols-outlined block text-slate-400" style={{ fontSize: '1.125rem' }}>
+              {isLocal ? 'cloud' : 'computer'}
+            </span>
+            <span>{isToggling ? 'Switching…' : `Switch to ${isLocal ? 'Cloud' : 'Local'}`}</span>
+          </button>
+
+          {/* Go to Dashboard */}
+          <button
+            id="sidebar-go-dashboard"
+            onClick={() => {
+              navigate('/dashboard');
+              setIsSettingsOpen(false);
+            }}
+            className="flex items-center w-full text-sm text-slate-600 hover:bg-white transition-colors"
+            style={{ gap: '0.75rem', padding: '0.5rem 0.625rem', borderRadius: '0.5rem' }}
+          >
+            <span className="material-symbols-outlined block text-slate-400" style={{ fontSize: '1.125rem' }}>monitoring</span>
+            <span>Analytics Dashboard</span>
+          </button>
+
+          {/* Keyboard Shortcuts */}
+          <button
+            id="sidebar-shortcuts"
+            onClick={() => {
+              alert('Keyboard Shortcuts:\n\n⌘/Ctrl + K — New Chat\n⌘/Ctrl + / — Toggle Sidebar\n⌘/Ctrl + U — Upload Document\nEsc — Close Panels');
+            }}
+            className="flex items-center w-full text-sm text-slate-600 hover:bg-white transition-colors"
+            style={{ gap: '0.75rem', padding: '0.5rem 0.625rem', borderRadius: '0.5rem' }}
+          >
+            <span className="material-symbols-outlined block text-slate-400" style={{ fontSize: '1.125rem' }}>keyboard</span>
+            <span>Keyboard Shortcuts</span>
+          </button>
+        </div>
+      )}
+
       {/* User Profile Card */}
       <div className="border-t border-slate-100 dark:border-slate-800" style={{ padding: '1rem' }}>
-        <div 
+        <div
+          id="sidebar-user-profile"
           className="flex items-center hover:bg-slate-50 cursor-pointer transition-colors"
           style={{ gap: '0.75rem', padding: '0.5rem', borderRadius: '0.75rem' }}
+          onClick={() => setIsSettingsOpen((prev) => !prev)}
         >
           <div className={`flex items-center justify-center text-white shadow-sm shrink-0 ${
             isLocal ? 'bg-emerald-600' : 'bg-primary'
@@ -210,7 +271,14 @@ export function Sidebar({
               {isLocal ? 'GDPR Safe' : 'Cloud API'}
             </p>
           </div>
-          <span className="material-symbols-outlined text-slate-400 shrink-0 block" style={{ fontSize: '1.125rem' }}>settings</span>
+          <span
+            className={`material-symbols-outlined shrink-0 block transition-colors ${
+              isSettingsOpen ? 'text-primary' : 'text-slate-400'
+            }`}
+            style={{ fontSize: '1.125rem' }}
+          >
+            settings
+          </span>
         </div>
       </div>
     </aside>
