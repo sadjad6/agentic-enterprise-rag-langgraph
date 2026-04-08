@@ -14,6 +14,7 @@ const hookState = vi.hoisted(() => ({
     activeSessionId: 'session-1' as string | null,
     selectSession: vi.fn(),
     deleteSession: vi.fn(),
+    renameSession: vi.fn(),
   },
   mode: {
     mode: { mode: 'local', description: 'Local mode' },
@@ -81,7 +82,7 @@ describe('App routes', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('Current Session')).toBeInTheDocument();
+    expect(screen.getAllByText('First Session').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'View Analytics' })).toBeInTheDocument();
   });
 
