@@ -110,9 +110,6 @@ describe('ChatMessage citations', () => {
     const user = userEvent.setup();
     render(<ChatMessage message={buildAssistantMessage()} />);
 
-    const citationButton = screen.getByRole('button', { name: 'Citation 1' });
-    const tooltip = screen.getByRole('tooltip', { hidden: true });
-
     await user.tab();
 
     const focusedCitation = screen.getByRole('button', { name: 'Citation 1' });
