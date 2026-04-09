@@ -105,5 +105,6 @@ async def run_agent(
         "answer": result.get("final_answer", ""),
         "language": language,
         "steps": result.get("step_count", 0),
+        "sources": result.get("retrieved_context", []),
         "tool_results": result.get("tool_results", []),
     }

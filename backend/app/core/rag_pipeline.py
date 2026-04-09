@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from app.core.citations import CitationSource, format_citation_context, merge_citation_sources
 from app.core.language_detect import detect_language, get_rag_prompt
 from app.core.llm_provider import get_chat_model, get_embeddings
 from app.core.vector_store import SearchResult, VectorStore
@@ -22,7 +23,7 @@ class RAGResponse:
     """Structured response from the RAG pipeline."""
 
     answer: str
-    sources: list[dict[str, str | float]]
+    sources: list[CitationSource]
     language: str
     tokens_used: dict[str, int] = field(default_factory=dict)
     cost_usd: float = 0.0
@@ -98,24 +99,10 @@ class RAGPipeline:
 
     def _format_context(
         self, results: list[SearchResult]
-    ) -> tuple[str, str, list[dict[str, str | float]]]:
+    ) -> tuple[str, str, list[CitationSource]]:
         """Format search results into context string and source list."""
-        context_parts: list[str] = []
-        sources_parts: list[str] = []
-        source_list: list[dict[str, str | float]] = []
-
-        for i, r in enumerate(results, 1):
-            context_parts.append(f"[{i}] {r.content}")
-            sources_parts.append(f"[{i}] {r.source} (chunk {r.chunk_index})")
-            source_list.append({
-                "source": r.source,
-                "chunk_index": r.chunk_index,
-                "score": round(r.score, 4),
-                "excerpt": r.content[:200],
-            })
-
-        context = "\n\n".join(context_parts)
-        sources_text = "\n".join(sources_parts)
+        source_list = merge_citation_sources([], results)
+        context, sources_text = format_citation_context(source_list)
         return context, sources_text, source_list
 
     @staticmethod

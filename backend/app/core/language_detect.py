@@ -6,7 +6,7 @@ prompt templates.
 
 import logging
 
-from langdetect import detect, LangDetectException
+from langdetect import LangDetectException, detect
 
 logger = logging.getLogger(__name__)
 
@@ -33,21 +33,23 @@ def detect_language(text: str) -> str:
         return DEFAULT_LANGUAGE
 
 
-# ── Multilingual prompt templates ─────────────────────────────
-
 RAG_SYSTEM_PROMPTS: dict[str, str] = {
     "en": (
         "You are a helpful enterprise assistant. Answer the user's question "
-        "based ONLY on the provided context. If the context doesn't contain "
-        "enough information, say so. Always cite your sources.\n\n"
+        "based ONLY on the provided context. If the context does not contain "
+        "enough information, say so. Every grounded claim must cite one or "
+        "more source ids inline using [n] format exactly as provided. Never "
+        "invent citation ids and never move all citations to the end.\n\n"
         "Context:\n{context}\n\n"
         "Sources:\n{sources}"
     ),
     "de": (
         "Du bist ein hilfreicher Unternehmensassistent. Beantworte die Frage "
         "des Benutzers NUR basierend auf dem bereitgestellten Kontext. Wenn der "
-        "Kontext nicht genügend Informationen enthält, sage das. Zitiere immer "
-        "deine Quellen.\n\n"
+        "Kontext nicht genug Informationen enthaelt, sage das. Jede belegte "
+        "Aussage muss eine oder mehrere Quellen-IDs direkt inline im Format [n] "
+        "enthalten. Erfinde keine Quellen-IDs und sammle die Zitate nicht nur "
+        "am Ende.\n\n"
         "Kontext:\n{context}\n\n"
         "Quellen:\n{sources}"
     ),
@@ -58,13 +60,16 @@ AGENT_SYSTEM_PROMPTS: dict[str, str] = {
         "You are an intelligent enterprise assistant with access to tools. "
         "Use the available tools to answer the user's question accurately. "
         "Think step-by-step and use tools when needed. "
-        "Always cite sources when using document search results."
+        "When document search results are used, keep track of the provided "
+        "source ids and cite grounded claims inline with [n] markers."
     ),
     "de": (
         "Du bist ein intelligenter Unternehmensassistent mit Zugriff auf Tools. "
-        "Verwende die verfügbaren Tools, um die Frage des Benutzers genau zu "
+        "Verwende die verfuegbaren Tools, um die Frage des Benutzers genau zu "
         "beantworten. Denke schrittweise und verwende Tools bei Bedarf. "
-        "Zitiere immer Quellen, wenn du Dokumentensuchergebnisse verwendest."
+        "Wenn Dokumentensuchergebnisse verwendet werden, merke dir die "
+        "bereitgestellten Quellen-IDs und zitiere belegte Aussagen inline mit "
+        "[n]-Markern."
     ),
 }
 

@@ -1,5 +1,8 @@
 """Tests for the FastAPI API endpoints."""
 
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -164,6 +167,129 @@ class TestQueryEndpoint:
         """session_id is required for durable analytics tracking."""
         response = client.post("/query", json={"query": "What is the policy?"})
         assert response.status_code == 422
+
+    def test_query_rag_returns_citation_sources(self, monkeypatch) -> None:
+        analytics = MagicMock()
+
+        async def fake_query(*, question: str, access_level: str, session_id: str):
+            return SimpleNamespace(
+                answer="The retention period is seven years [1].",
+                sources=[
+                    {
+                        "citation_id": 1,
+                        "source": "retention-policy.pdf",
+                        "chunk_index": 0,
+                        "score": 0.94,
+                        "excerpt": "Records must be retained for seven years from the effective date.",
+                    }
+                ],
+                language="en",
+                tokens_used={"input": 10, "output": 8},
+                cost_usd=0.001,
+            )
+
+        monkeypatch.setattr("app.api.routes_query.get_rag_pipeline", lambda: SimpleNamespace(query=fake_query))
+        monkeypatch.setattr("app.api.routes_query.get_analytics_service", lambda: analytics)
+        monkeypatch.setattr(
+            "app.api.routes_query.get_settings",
+            lambda: SimpleNamespace(
+                active_llm_model="gpt-test",
+                system_mode=SimpleNamespace(value="local"),
+            ),
+        )
+
+        response = client.post(
+            "/query",
+            json={"query": "What is the retention period?", "mode": "rag", "session_id": "session-rag"},
+        )
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["sources"] == [
+            {
+                "citation_id": 1,
+                "source": "retention-policy.pdf",
+                "chunk_index": 0,
+                "score": 0.94,
+                "excerpt": "Records must be retained for seven years from the effective date.",
+            }
+        ]
+
+    def test_query_agent_returns_citation_sources_when_available(self, monkeypatch) -> None:
+        analytics = MagicMock()
+        tracker = MagicMock()
+        tracker.track_request.return_value = {"tokens": {"input": 7, "output": 6}, "cost_usd": 0.0}
+
+        async def fake_run_agent(*, query: str, session_id: str):
+            return {
+                "answer": "Employees may work remotely up to three days per week [1].",
+                "language": "en",
+                "steps": 2,
+                "sources": [
+                    {
+                        "citation_id": 1,
+                        "source": "remote-work-policy.pdf",
+                        "chunk_index": 2,
+                        "score": 0.93,
+                        "excerpt": "Employees may work remotely up to three days per week with manager approval.",
+                    }
+                ],
+                "tool_results": [],
+            }
+
+        monkeypatch.setattr("app.api.routes_query.run_agent", fake_run_agent)
+        monkeypatch.setattr("app.api.routes_query.get_cost_tracker", lambda: tracker)
+        monkeypatch.setattr("app.api.routes_query.get_analytics_service", lambda: analytics)
+        monkeypatch.setattr(
+            "app.api.routes_query.get_settings",
+            lambda: SimpleNamespace(
+                active_llm_model="gpt-test",
+                system_mode=SimpleNamespace(value="local"),
+            ),
+        )
+
+        response = client.post(
+            "/query",
+            json={"query": "How often can employees work remotely?", "mode": "agent", "session_id": "session-agent"},
+        )
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["sources"][0]["citation_id"] == 1
+        assert body["sources"][0]["source"] == "remote-work-policy.pdf"
+
+    def test_query_agent_returns_empty_sources_without_document_context(self, monkeypatch) -> None:
+        analytics = MagicMock()
+        tracker = MagicMock()
+        tracker.track_request.return_value = {"tokens": {"input": 4, "output": 3}, "cost_usd": 0.0}
+
+        async def fake_run_agent(*, query: str, session_id: str):
+            return {
+                "answer": "The result is 57.",
+                "language": "en",
+                "steps": 1,
+                "sources": [],
+                "tool_results": [{"tool": "calculator", "args": {"expression": "sqrt(144) + 15 * 3"}, "result": "Result: 57.0"}],
+            }
+
+        monkeypatch.setattr("app.api.routes_query.run_agent", fake_run_agent)
+        monkeypatch.setattr("app.api.routes_query.get_cost_tracker", lambda: tracker)
+        monkeypatch.setattr("app.api.routes_query.get_analytics_service", lambda: analytics)
+        monkeypatch.setattr(
+            "app.api.routes_query.get_settings",
+            lambda: SimpleNamespace(
+                active_llm_model="gpt-test",
+                system_mode=SimpleNamespace(value="local"),
+            ),
+        )
+
+        response = client.post(
+            "/query",
+            json={"query": "What is sqrt(144) + 15 * 3?", "mode": "agent", "session_id": "session-agent-empty"},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["sources"] == []
 
 
 class TestUploadEndpoint:

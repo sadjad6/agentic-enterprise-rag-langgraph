@@ -11,6 +11,7 @@ interface QueryRequest {
 }
 
 export interface SourceInfo {
+  citation_id: number;
   source: string;
   chunk_index: number;
   score: number;
@@ -26,7 +27,7 @@ export interface QueryResponse {
   mode_used: string;
   pii_detected: boolean;
   agent_steps: number;
-  tool_results: Array<{ tool: string; args: Record<string, string>; result: string }>;
+  tool_results: Array<{ tool: string; args: Record<string, string>; result: string; sources?: SourceInfo[] }>;
 }
 
 export interface ModeInfo {

@@ -9,6 +9,8 @@ from typing import Annotated, Any
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
 
+from app.core.citations import CitationSource
+
 
 class AgentState(TypedDict):
     """State flowing through the LangGraph agent workflow."""
@@ -23,7 +25,7 @@ class AgentState(TypedDict):
     language: str
 
     # Retrieved context from Weaviate
-    retrieved_context: list[dict[str, Any]]
+    retrieved_context: list[CitationSource]
 
     # Tool results accumulator
     tool_results: list[dict[str, Any]]

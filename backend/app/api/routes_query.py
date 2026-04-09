@@ -28,6 +28,7 @@ class QueryRequest(BaseModel):
 class SourceInfo(BaseModel):
     """Information about a source document."""
 
+    citation_id: int
     source: str
     chunk_index: int = 0
     score: float = 0.0
@@ -120,7 +121,7 @@ async def _handle_agent_query(
 
     response = QueryResponse(
         answer=result.get("answer", ""),
-        sources=[],
+        sources=[SourceInfo(**s) for s in result.get("sources", [])],
         language=result.get("language", "en"),
         tokens_used=usage.get("tokens", {}),
         cost_usd=usage.get("cost_usd", 0.0),

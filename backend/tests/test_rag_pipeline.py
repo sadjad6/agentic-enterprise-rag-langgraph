@@ -32,7 +32,11 @@ async def test_rag_pipeline_happy_path(mock_get_chat_model, mock_get_embeddings,
     mock_get_embeddings.return_value = embed_mock
     
     mock_result = MagicMock()
-    mock_result.content = "Internal document text"
+    mock_result.content = (
+        "Internal document text with the full supporting chunk preserved for citation previews. "
+        "This excerpt is intentionally longer than two hundred characters so the test can verify "
+        "that the backend no longer truncates source excerpts before returning them to the client."
+    )
     mock_result.source = "doc1.pdf"
     mock_result.score = 0.9
     mock_result.chunk_index = 0
@@ -50,8 +54,10 @@ async def test_rag_pipeline_happy_path(mock_get_chat_model, mock_get_embeddings,
     # Assert
     assert res.answer == "Based on the internal doc, this is the answer."
     assert len(res.sources) == 1
+    assert res.sources[0]["citation_id"] == 1
     assert res.sources[0]["source"] == "doc1.pdf"
     assert res.sources[0]["score"] == 0.9
+    assert res.sources[0]["excerpt"] == mock_result.content
     assert res.language == "en"
     rag_pipeline._cost_tracker.track_request.assert_called_once()
 
@@ -105,4 +111,3 @@ async def test_rag_pipeline_unhappy_path_llm_failure(mock_get_chat_model, mock_g
     
     with pytest.raises(Exception, match="LLM generation failed"):
         await rag_pipeline.query("What is the policy?")
-
