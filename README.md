@@ -2,7 +2,7 @@
 
 ![Enterprise RAG Assistant](./assets/banner.jpeg)
 
-A **GDPR-compliant Enterprise RAG (Retrieval-Augmented Generation) system** with agentic LangGraph workflows, multilingual support (DE/EN), cost tracking, and hybrid LLM infrastructure.
+A portfolio implementation of an **agentic RAG (Retrieval-Augmented Generation) assistant** with LangGraph workflows, German/English query handling, Weaviate hybrid retrieval, local and cloud LLM configuration, and estimated token/cost tracking. It includes optional regex-based PII masking for queries; GDPR compliance has not been established.
 
 ## Architecture
 
@@ -15,11 +15,11 @@ A **GDPR-compliant Enterprise RAG (Retrieval-Augmented Generation) system** with
 │  └────┬────┘ └────┬─────┘ └─────┬─────┘ └──────────────────┘    │
 │       └───────────┴─────────────┴───────────────┐                │
 │                                                 ▼                │
-│                         Vercel (Frontend Hosting)                │
+│                         Vercel configuration available                │
 └─────────────────────────────┬────────────────────────────────────┘
                               │ REST API
 ┌─────────────────────────────▼────────────────────────────────────┐
-│                    FastAPI Backend (Railway)                      │
+│                    FastAPI Backend (Railway config)                      │
 │  ┌────────────────────────────────────────────────────────────┐   │
 │  │  /query  │  /upload  │  /metrics  │  /health  │  /mode    │   │
 │  └────┬─────┴─────┬─────┴──────┬─────┴─────┬─────┴─────┬────┘   │
@@ -42,8 +42,8 @@ A **GDPR-compliant Enterprise RAG (Retrieval-Augmented Generation) system** with
 │  └────┬───────────────────────────────────────┘                   │
 │       │                                                          │
 │  ┌────▼────┐  ┌───────────┐  ┌──────────────────┐               │
-│  │GDPR PII │  │  Slack    │  │  Teams           │               │
-│  │Anonymize│  │  Bot      │  │  Bot             │               │
+│  │Optional  │  │  Slack    │  │  Teams           │               │
+│  │PII mask │  │  Bot      │  │  Bot             │               │
 │  └─────────┘  └───────────┘  └──────────────────┘               │
 └─────────────────────────────┬────────────────────────────────────┘
                               │
@@ -68,7 +68,8 @@ A **GDPR-compliant Enterprise RAG (Retrieval-Augmented Generation) system** with
 ### 1. Clone & Configure
 
 ```bash
-git clone <repo-url> && cd agentic-enterprise-rag-langgraph
+git clone https://github.com/sadjad6/agentic-enterprise-rag-langgraph.git
+cd agentic-enterprise-rag-langgraph
 cp .env.example .env
 # Edit .env with your API keys
 ```
@@ -78,7 +79,7 @@ cp .env.example .env
 ```bash
 docker-compose up -d weaviate ollama
 # Pull a local model (optional)
-docker exec -it $(docker ps -qf "ancestor=ollama/ollama") ollama pull mistral
+docker exec -it $(docker ps -qf "ancestor=ollama/ollama") ollama pull llama3.2:1b
 docker exec -it $(docker ps -qf "ancestor=ollama/ollama") ollama pull nomic-embed-text
 ```
 
@@ -102,15 +103,14 @@ Open [http://localhost:5173](http://localhost:5173)
 
 ## System Modes
 
-| Feature | 🔒 Local (GDPR) | ☁️ Cloud |
-|---------|-----------------|----------|
-| LLM | Ollama (Mistral) | GPT-4o-mini |
-| Embeddings | nomic-embed-text | text-embedding-3-small |
+| Feature | Local configuration | Cloud configuration |
+|---------|---------------------|---------------------|
+| LLM | Ollama (`llama3.2:1b` default) | OpenAI (`gpt-4o-mini` default) |
+| Embeddings | Ollama (`nomic-embed-text`) | OpenAI (`text-embedding-3-small`) |
 | Vector DB | Docker Weaviate | Weaviate Cloud |
-| Data leaves network | ❌ No | ✅ Yes |
-| Cost | Free | Pay-per-token |
+| Model API cost | No model API charge; local compute still costs | Usage-based API charges |
 
-Switch modes via the UI toggle or `POST /mode` endpoint.
+Switch modes via the UI toggle or `POST /mode` endpoint. The endpoint changes an in-memory setting, while the vector-store connection is cached; restart after changing the configured vector-store mode. Local mode does not guarantee that data stays on the local network: LLM and embedding providers contain an OpenAI fallback when local provider construction fails and credentials are present. Review the configuration and data flow before using sensitive documents.
 
 ## API Endpoints
 
@@ -159,12 +159,11 @@ npm run build
 
 ## Evaluation
 
-```bash
-cd backend
-uv run python -m evaluation.evaluate --base-url http://localhost:8000
-```
+`backend/evaluation/evaluate.py` contains sample checks for answer presence, expected terms and sources, language, and tool use. It does not report a published quality benchmark. The script currently omits the `session_id` required by `POST /query`; add that field before running the evaluation command.
 
 ## Deployment
+
+Railway and Vercel configuration files are included. This repository does not establish that a public deployment is running.
 
 ### Backend → Railway
 1. Connect GitHub repo to Railway
@@ -182,8 +181,9 @@ uv run python -m evaluation.evaluate --base-url http://localhost:8000
 
 **Backend:** Python 3.12 · FastAPI · LangChain · LangGraph · Weaviate v4 · Ollama · OpenAI  
 **Frontend:** React · TypeScript · Tailwind CSS · Recharts · Lucide Icons  
-**Infrastructure:** Docker · Railway · Vercel
+**Infrastructure:** Docker · Railway/Vercel deployment configuration
 
 ## License
 
 MIT
+
