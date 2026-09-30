@@ -1,7 +1,5 @@
 # 🧠 Enterprise RAG Assistant
 
-![Enterprise RAG Assistant](./assets/banner.jpeg)
-
 A portfolio implementation of an **agentic RAG (Retrieval-Augmented Generation) assistant** with LangGraph workflows, German/English query handling, Weaviate hybrid retrieval, local and cloud LLM configuration, and estimated token/cost tracking. It includes optional regex-based PII masking for queries; GDPR compliance has not been established.
 
 ## Architecture
