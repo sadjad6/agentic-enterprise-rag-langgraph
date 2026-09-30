@@ -15,11 +15,11 @@ A portfolio implementation of an **agentic RAG (Retrieval-Augmented Generation) 
 │  └────┬────┘ └────┬─────┘ └─────┬─────┘ └──────────────────┘    │
 │       └───────────┴─────────────┴───────────────┐                │
 │                                                 ▼                │
-│                         Vercel configuration available                │
+│                 Vercel deployment configuration                  │
 └─────────────────────────────┬────────────────────────────────────┘
                               │ REST API
 ┌─────────────────────────────▼────────────────────────────────────┐
-│                    FastAPI Backend (Railway config)                      │
+│                 FastAPI Backend (Railway config)                 │
 │  ┌────────────────────────────────────────────────────────────┐   │
 │  │  /query  │  /upload  │  /metrics  │  /health  │  /mode    │   │
 │  └────┬─────┴─────┬─────┴──────┬─────┴─────┬─────┴─────┬────┘   │
