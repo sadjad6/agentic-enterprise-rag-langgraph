@@ -1,5 +1,9 @@
 # 🧠 Enterprise RAG Assistant
 
+![agentic-enterprise-rag-langgraph project artwork](./assets/banner.jpeg)
+
+*Original concept artwork. The security label is aspirational; GDPR compliance is not established. See the implementation details below.*
+
 A portfolio implementation of an **agentic RAG (Retrieval-Augmented Generation) assistant** with LangGraph workflows, German/English query handling, Weaviate hybrid retrieval, local and cloud LLM configuration, and estimated token/cost tracking. It includes optional regex-based PII masking for queries; GDPR compliance has not been established.
 
 ## Architecture
